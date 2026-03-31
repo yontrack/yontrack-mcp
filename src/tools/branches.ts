@@ -7,6 +7,7 @@ const LIST_BRANCHES = `
     branches(project: $project, name: $name) {
       id
       name
+      displayName
       description
       disabled
       project { id name }
@@ -21,7 +22,7 @@ const CREATE_BRANCH = `
       name: $name
       description: $description
     }) {
-      branch { id name description disabled project { id name } }
+      branch { id name displayName description disabled project { id name } }
       userErrors { message }
     }
   }

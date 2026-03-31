@@ -8,6 +8,7 @@ const LIST_BUILDS = `
       builds(count: $count) {
         id
         name
+        displayName
         description
         creation { user time }
       }
@@ -20,8 +21,9 @@ const FIND_BUILD = `
     builds(project: $project, branch: $branch, name: $name) {
       id
       name
+      displayName
       description
-      branch { id name project { id name } }
+      branch { id name displayName project { id name } }
       creation { user time }
       runInfo { sourceType sourceUri triggerType triggerData runTime }
     }
@@ -41,7 +43,7 @@ const CREATE_BUILD = `
       name: $name
       description: $description
     }) {
-      build { id name description branch { id name project { id name } } }
+      build { id name displayName description branch { id name displayName project { id name } } }
       userErrors { message }
     }
   }

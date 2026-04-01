@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/yontrack/yontrack-mcp/compare/v1.1.0...v1.2.0) (2026-04-01)
+
+
+### Features
+
+* Helm chart config & docs ([8fe2d8b](https://github.com/yontrack/yontrack-mcp/commit/8fe2d8b04d30f389e054d2e35d2ae5cf93d3960c))
+
 # [1.1.0](https://github.com/yontrack/yontrack-mcp/compare/v1.0.0...v1.1.0) (2026-04-01)
 
 

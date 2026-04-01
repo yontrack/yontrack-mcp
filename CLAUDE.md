@@ -9,9 +9,11 @@ npm run build       # Compile TypeScript → ./build/ (also makes index.js execu
 npm run dev         # Watch mode with tsx (no compilation)
 npm run typecheck   # Type-check without emitting
 npm run start       # Run compiled server
+npm test            # Run unit tests (Vitest, no live instance needed)
+npm run test:watch  # Vitest in watch mode
 ```
 
-No test framework is configured. Before running the server, set required environment variables:
+Before running the server, set required environment variables:
 ```bash
 export YONTRACK_URL=https://your-instance
 export YONTRACK_TOKEN=your-token

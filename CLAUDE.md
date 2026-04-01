@@ -34,6 +34,21 @@ This is a TypeScript MCP server that exposes Yontrack (Ontrack CI/CD platform) f
 
 Each tool file follows a consistent pattern: define GraphQL strings → call `server.tool()` with a Zod input schema → async handler → check `userErrors` array on mutations.
 
+## Versioning & releases
+
+Releases are automated via [Release Please](https://github.com/googleapis/release-please). It reads commit messages to determine the version bump and generates `CHANGELOG.md`.
+
+Commits to `main` must follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+| Prefix | Effect |
+|---|---|
+| `fix:` | patch bump (1.0.x) |
+| `feat:` | minor bump (1.x.0) |
+| `feat!:` or `BREAKING CHANGE:` | major bump (x.0.0) |
+| `chore:`, `docs:`, `test:`, etc. | no release |
+
+Release Please opens a PR that updates `package.json` and `CHANGELOG.md`. Merging it triggers the GitHub release and pushes a versioned Docker image tag.
+
 ## Yontrack GraphQL API Gotchas
 
 The full schema is in `yontrack.graphql`. Key input field quirks to watch for when adding/modifying tools:

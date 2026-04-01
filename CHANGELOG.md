@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/yontrack/yontrack-mcp/compare/v1.2.0...v1.2.1) (2026-04-01)
+
+
+### Bug Fixes
+
+* removing the OIDC features ([110d686](https://github.com/yontrack/yontrack-mcp/commit/110d6865fde59f1b27a7edd213acec55144dfe93))
+
 # [1.2.0](https://github.com/yontrack/yontrack-mcp/compare/v1.1.0...v1.2.0) (2026-04-01)
 
 

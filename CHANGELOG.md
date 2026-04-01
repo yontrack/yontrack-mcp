@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/yontrack/yontrack-mcp/compare/v1.2.1...v1.2.2) (2026-04-01)
+
+
+### Bug Fixes
+
+* aligning the Docker image version with the Helm chart ([0b5c2b0](https://github.com/yontrack/yontrack-mcp/commit/0b5c2b0a3ffe8b4e22aaedf3d7e2eba923886fc4))
+
 ## [1.2.1](https://github.com/yontrack/yontrack-mcp/compare/v1.2.0...v1.2.1) (2026-04-01)
 
 

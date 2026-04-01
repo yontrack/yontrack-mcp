@@ -92,10 +92,6 @@ helm install yontrack-mcp \
 | `yontrack.url` | URL of the Yontrack instance | `""` |
 | `yontrack.token` | Yontrack API token | `""` |
 | `existingSecret` | Name of a pre-existing Secret (skips Secret creation) | `""` |
-| `oidc.enabled` | Enable OIDC env vars injection | `false` |
-| `oidc.issuerUrl` | OIDC issuer URL | `""` |
-| `oidc.clientId` | OAuth client ID | `""` |
-| `oidc.clientSecret` | OAuth client secret | `""` |
 | `service.type` | Kubernetes Service type | `ClusterIP` |
 | `service.port` | Service port | `3000` |
 | `ingress.enabled` | Enable Ingress resource | `false` |
@@ -110,7 +106,6 @@ helm install yontrack-mcp \
 When credentials are managed externally (e.g. External Secrets Operator, Vault, or a manually created Secret), set `existingSecret` to skip Secret creation. The referenced Secret must contain:
 
 - `YONTRACK_TOKEN`
-- `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET` (only required when `oidc.enabled: true`)
 
 ```bash
 helm install yontrack-mcp \
@@ -140,17 +135,6 @@ ingress:
 ```
 
 The MCP endpoint is then available at `https://mcp.example.com/mcp`.
-
-### OIDC example
-
-```yaml
-yontrack:
-  url: https://your-ontrack-instance
-oidc:
-  enabled: true
-  issuerUrl: https://idp.example.com/realms/myrealm
-existingSecret: my-yontrack-secret  # must contain YONTRACK_TOKEN, OIDC_CLIENT_ID, OIDC_CLIENT_SECRET
-```
 
 ## Usage with Claude Desktop / Claude.ai
 

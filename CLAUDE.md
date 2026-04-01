@@ -60,8 +60,8 @@ The chart lives in `helm/yontrack-mcp-chart/`. Key files:
 
 - `Chart.yaml` — `version`/`appVersion` are `0.0.0` placeholders; overridden by CI at release time
 - `values.yaml` — configures `yontrack.url`, `yontrack.token`, `oidc.*`, `existingSecret`, ingress, resources
-- `templates/secret.yaml` — only rendered when `existingSecret` is empty; holds `YONTRACK_TOKEN` and optional OIDC credentials
-- `templates/deployment.yaml` — sets `PORT=3000`, references secrets via `yontrack-mcp-chart.secretName` helper (resolves to `existingSecret` or the chart-managed secret)
+- `templates/secret.yaml` — only rendered when `existingSecret` is empty; holds `YONTRACK_TOKEN`
+- `templates/deployment.yaml` — sets `PORT=3000`, references the secret via `yontrack-mcp-chart.secretName` helper (resolves to `existingSecret` or the chart-managed secret)
 - `templates/_helpers.tpl` — defines `yontrack-mcp-chart.secretName` in addition to the standard name/label helpers
 
 ## Yontrack GraphQL API Gotchas

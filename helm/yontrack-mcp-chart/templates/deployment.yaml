@@ -44,20 +44,6 @@ spec:
                 secretKeyRef:
                   name: {{ include "yontrack-mcp-chart.secretName" . }}
                   key: YONTRACK_TOKEN
-            {{- if .Values.oidc.enabled }}
-            - name: OIDC_ISSUER_URL
-              value: {{ .Values.oidc.issuerUrl | quote }}
-            - name: OIDC_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "yontrack-mcp-chart.secretName" . }}
-                  key: OIDC_CLIENT_ID
-            - name: OIDC_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "yontrack-mcp-chart.secretName" . }}
-                  key: OIDC_CLIENT_SECRET
-            {{- end }}
           livenessProbe:
             httpGet:
               path: /health

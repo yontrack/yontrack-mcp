@@ -18,16 +18,6 @@ yontrack:
   # Required: API token for authenticating against Yontrack
   token: ""
 
-# OIDC configuration for the MCP server's OAuth integration
-oidc:
-  enabled: false
-  # URL of the OIDC issuer / authorization server
-  issuerUrl: ""
-  # OAuth client ID registered for the MCP server
-  clientId: ""
-  # OAuth client secret
-  clientSecret: ""
-
 service:
   type: ClusterIP
   port: 3000

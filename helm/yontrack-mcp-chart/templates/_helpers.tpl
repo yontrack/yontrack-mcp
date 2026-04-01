@@ -42,6 +42,13 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
+Name of the secret to use for credentials.
+*/}}
+{{- define "yontrack-mcp-chart.secretName" -}}
+{{- .Values.existingSecret | default (include "yontrack-mcp-chart.fullname" .) }}
+{{- end }}
+
+{{/*
 Selector labels.
 */}}
 {{- define "yontrack-mcp-chart.selectorLabels" -}}

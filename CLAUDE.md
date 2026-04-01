@@ -23,11 +23,14 @@ export YONTRACK_TOKEN=your-token
 
 This is a TypeScript MCP server that exposes Yontrack (Ontrack CI/CD platform) functionality via its GraphQL API. It uses `@modelcontextprotocol/sdk` for the MCP protocol, `graphql-request` for GraphQL calls, and `zod` for input validation.
 
-**Entry flow:** `src/index.ts` → `src/server.ts` (creates McpServer) → `src/tools/index.ts` (registers all tools)
+**Entry flow:** `src/index.ts` → `src/server.ts` (creates McpServer via factory) → `src/tools/index.ts` (registers all tools)
+
+**Transport:** The server always uses Streamable HTTP transport (`POST /mcp`). It listens on `PORT` (default `3000`). A `GET /health` endpoint is also served for liveness/readiness probes.
 
 **Core modules:**
 - `src/config.ts` — Validates `YONTRACK_URL` and `YONTRACK_TOKEN` env vars via Zod; exits process on failure
 - `src/client.ts` — Exports a `gqlClient` GraphQL client authenticated via `X-Ontrack-Token` header
+- `src/server.ts` — Exports `createServer()` factory; called once per HTTP request (stateless) or once for stdio
 - `src/utils.ts` — `resolveBranchId(project, branch)` helper that resolves names to a branch ID (required for some mutations)
 
 **Tools** (24 total across 9 files in `src/tools/`): projects, branches, builds, validation stamps, validation runs, promotion levels, promotion runs, build links, search.
@@ -47,7 +50,19 @@ Commits to `main` must follow [Conventional Commits](https://www.conventionalcom
 | `feat!:` or `BREAKING CHANGE:` | major bump (x.0.0) |
 | `chore:`, `docs:`, `test:`, etc. | no release |
 
-The GitHub release is initially created as a draft and published only after the Docker image has been successfully pushed.
+The GitHub release is initially created as a draft and published only after both the Docker image and the Helm chart OCI image have been successfully pushed.
+
+The Helm chart is packaged and pushed to `oci://registry-1.docker.io/nemerosa/yontrack-mcp-chart` with the same version as the Docker image. The `version` and `appVersion` in `helm/yontrack-mcp-chart/Chart.yaml` are set to `0.0.0` in the repository; CI overrides them at package time via `helm package --version $VERSION --app-version $VERSION`.
+
+## Helm chart
+
+The chart lives in `helm/yontrack-mcp-chart/`. Key files:
+
+- `Chart.yaml` — `version`/`appVersion` are `0.0.0` placeholders; overridden by CI at release time
+- `values.yaml` — configures `yontrack.url`, `yontrack.token`, `oidc.*`, `existingSecret`, ingress, resources
+- `templates/secret.yaml` — only rendered when `existingSecret` is empty; holds `YONTRACK_TOKEN` and optional OIDC credentials
+- `templates/deployment.yaml` — sets `PORT=3000`, references secrets via `yontrack-mcp-chart.secretName` helper (resolves to `existingSecret` or the chart-managed secret)
+- `templates/_helpers.tpl` — defines `yontrack-mcp-chart.secretName` in addition to the standard name/label helpers
 
 ## Yontrack GraphQL API Gotchas
 

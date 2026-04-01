@@ -6,6 +6,11 @@ image:
   # Overrides the image tag; defaults to the chart appVersion when empty
   tag: ""
 
+# Name of an existing Secret to use for credentials.
+# If set, the chart will not create a Secret and will reference this one instead.
+# The secret must contain YONTRACK_TOKEN, and OIDC_CLIENT_ID + OIDC_CLIENT_SECRET if oidc.enabled.
+existingSecret: ""
+
 # Target Yontrack instance
 yontrack:
   # Required: URL of the Yontrack instance (e.g. https://ontrack.example.com)

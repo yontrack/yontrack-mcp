@@ -30,6 +30,17 @@ const FIND_BUILD = `
   }
 `;
 
+const GET_BUILD_DURATION = `
+  query GetBuildDuration($project: String!, $branch: String!, $name: String!, $promotion: String!) {
+    builds(project: $project, branch: $branch, name: $name) {
+      creation { time }
+      promotionRuns(promotion: $promotion) {
+        creation { time }
+      }
+    }
+  }
+`;
+
 const CREATE_BUILD = `
   mutation CreateBuild(
     $project: String!
@@ -113,6 +124,61 @@ export function registerBuildTools(server: McpServer) {
       }
       return {
         content: [{ type: "text", text: JSON.stringify(build, null, 2) }],
+      };
+    }
+  );
+
+  server.tool(
+    "get_build_duration",
+    "Get the duration of a build, measured from build creation to its first promotion to a given level (defaults to BRONZE)",
+    {
+      project: z.string().describe("Project name"),
+      branch: z.string().describe("Branch name"),
+      build: z.string().describe("Build name"),
+      promotion: z.string().optional().default("BRONZE").describe("Promotion level name to measure duration against"),
+    },
+    async ({ project, branch, build, promotion }) => {
+      const data = await gqlClient.request<{
+        builds: Array<{
+          creation: { time: string };
+          promotionRuns: Array<{ creation: { time: string } }>;
+        }>;
+      }>(GET_BUILD_DURATION, { project, branch, name: build, promotion });
+
+      const buildData = data.builds?.[0];
+      if (!buildData) {
+        return { isError: true, content: [{ type: "text", text: `Build not found: ${build}` }] };
+      }
+
+      const promotionRun = buildData.promotionRuns?.[0];
+      if (!promotionRun) {
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              project, branch, build, promotion,
+              buildCreatedAt: buildData.creation.time,
+              promoted: false,
+              durationSeconds: null,
+            }, null, 2),
+          }],
+        };
+      }
+
+      const buildTime = new Date(buildData.creation.time).getTime();
+      const promotionTime = new Date(promotionRun.creation.time).getTime();
+      const durationSeconds = Math.round((promotionTime - buildTime) / 1000);
+
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            project, branch, build, promotion,
+            buildCreatedAt: buildData.creation.time,
+            promotedAt: promotionRun.creation.time,
+            durationSeconds,
+          }, null, 2),
+        }],
       };
     }
   );

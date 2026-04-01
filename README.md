@@ -43,7 +43,23 @@ YONTRACK_URL=https://your-ontrack-instance YONTRACK_TOKEN=your-token \
   npx @modelcontextprotocol/inspector node build/index.js
 ```
 
+## Docker
+
+A pre-built image is published to Docker Hub on every push to `main`:
+
+```
+nemerosa/yontrack-mcp:latest
+```
+
+To build locally:
+
+```bash
+docker build -t yontrack-mcp .
+```
+
 ## Usage with Claude Desktop
+
+### From source
 
 Add the following to your `claude_desktop_config.json`:
 
@@ -53,6 +69,28 @@ Add the following to your `claude_desktop_config.json`:
     "yontrack": {
       "command": "node",
       "args": ["/path/to/yontrack-mcp/build/index.js"],
+      "env": {
+        "YONTRACK_URL": "https://your-ontrack-instance",
+        "YONTRACK_TOKEN": "your-api-token"
+      }
+    }
+  }
+}
+```
+
+### From Docker
+
+```json
+{
+  "mcpServers": {
+    "yontrack": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-e", "YONTRACK_URL",
+        "-e", "YONTRACK_TOKEN",
+        "nemerosa/yontrack-mcp:latest"
+      ],
       "env": {
         "YONTRACK_URL": "https://your-ontrack-instance",
         "YONTRACK_TOKEN": "your-api-token"

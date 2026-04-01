@@ -19,29 +19,38 @@ jobs:
       - run: npm run build
       - run: npm test
 
-  release-please:
+  release:
     runs-on: ubuntu-latest
     needs: build-and-test
     if: github.event_name == 'push'
     permissions:
       contents: write
+      issues: write
       pull-requests: write
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
+      new_release_published: ${{ steps.release.outputs.new_release_published }}
+      new_release_version: ${{ steps.release.outputs.new_release_version }}
     steps:
-      - uses: googleapis/release-please-action@v4
-        id: release
+      - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: cycjimmy/semantic-release-action@v4
+        id: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   docker:
     runs-on: ubuntu-latest
-    needs: [build-and-test, release-please]
+    needs: [build-and-test, release]
     if: |
       always() &&
       needs.build-and-test.result == 'success' &&
-      (needs.release-please.result == 'success' || needs.release-please.result == 'skipped')
+      (needs.release.result == 'success' || needs.release.result == 'skipped')
     permissions:
       contents: read
     steps:
@@ -60,7 +69,7 @@ jobs:
           tags: |
             type=sha
             type=raw,value=latest,enable=${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-            type=raw,value=${{ needs.release-please.outputs.tag_name }},enable=${{ needs.release-please.outputs.release_created == 'true' }}
+            type=raw,value=v${{ needs.release.outputs.new_release_version }},enable=${{ needs.release.outputs.new_release_published == 'true' }}
       - uses: docker/build-push-action@v6
         with:
           context: .
@@ -72,11 +81,11 @@ jobs:
 
   publish-release:
     runs-on: ubuntu-latest
-    needs: [release-please, docker]
-    if: needs.release-please.outputs.release_created == 'true'
+    needs: [release, docker]
+    if: needs.release.outputs.new_release_published == 'true'
     permissions:
       contents: write
     steps:
-      - run: gh release edit ${{ needs.release-please.outputs.tag_name }} --draft=false --repo ${{ github.repository }}
+      - run: gh release edit v${{ needs.release.outputs.new_release_version }} --draft=false --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

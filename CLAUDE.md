@@ -36,7 +36,7 @@ Each tool file follows a consistent pattern: define GraphQL strings → call `se
 
 ## Versioning & releases
 
-Releases are automated via [Release Please](https://github.com/googleapis/release-please). It reads commit messages to determine the version bump and generates `CHANGELOG.md`.
+Releases are fully automated via [semantic-release](https://semantic-release.gitbook.io). On every push to `main`, it analyses commits since the last release, computes the next version, updates `package.json` and `CHANGELOG.md`, and creates a GitHub release. No manual step required.
 
 Commits to `main` must follow [Conventional Commits](https://www.conventionalcommits.org/):
 
@@ -47,7 +47,7 @@ Commits to `main` must follow [Conventional Commits](https://www.conventionalcom
 | `feat!:` or `BREAKING CHANGE:` | major bump (x.0.0) |
 | `chore:`, `docs:`, `test:`, etc. | no release |
 
-Release Please opens a PR that updates `package.json` and `CHANGELOG.md`. Merging it triggers the GitHub release and pushes a versioned Docker image tag.
+The GitHub release is initially created as a draft and published only after the Docker image has been successfully pushed.
 
 ## Yontrack GraphQL API Gotchas
 

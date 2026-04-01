@@ -79,9 +79,26 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  publish-release:
+  helm:
     runs-on: ubuntu-latest
     needs: [release, docker]
+    if: needs.release.outputs.new_release_published == 'true'
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Log in to Docker Hub OCI registry
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | helm registry login registry-1.docker.io -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+      - name: Package and push Helm chart
+        run: |
+          VERSION=${{ needs.release.outputs.new_release_version }}
+          helm package helm/yontrack-mcp-chart --version "${VERSION}" --app-version "${VERSION}"
+          helm push "yontrack-mcp-chart-${VERSION}.tgz" oci://registry-1.docker.io/nemerosa
+
+  publish-release:
+    runs-on: ubuntu-latest
+    needs: [release, docker, helm]
     if: needs.release.outputs.new_release_published == 'true'
     permissions:
       contents: write

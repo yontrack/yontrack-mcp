@@ -1,0 +1,53 @@
+replicaCount: 1
+
+image:
+  repository: nemerosa/yontrack-mcp
+  pullPolicy: IfNotPresent
+  # Overrides the image tag; defaults to the chart appVersion when empty
+  tag: ""
+
+# Target Yontrack instance
+yontrack:
+  # Required: URL of the Yontrack instance (e.g. https://ontrack.example.com)
+  url: ""
+  # Required: API token for authenticating against Yontrack
+  token: ""
+
+# OIDC configuration for the MCP server's OAuth integration
+oidc:
+  enabled: false
+  # URL of the OIDC issuer / authorization server
+  issuerUrl: ""
+  # OAuth client ID registered for the MCP server
+  clientId: ""
+  # OAuth client secret
+  clientSecret: ""
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /mcp
+          pathType: Prefix
+  tls: []
+
+resources: {}
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

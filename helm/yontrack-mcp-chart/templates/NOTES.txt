@@ -1,0 +1,14 @@
+Yontrack MCP server {{ .Chart.AppVersion }} deployed.
+
+The MCP endpoint is available at:
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}{{ (index .paths 0).path }}
+{{- end }}
+{{- else }}
+  kubectl port-forward svc/{{ include "yontrack-mcp-chart.fullname" . }} 3000:{{ .Values.service.port }}
+  Then connect to: http://localhost:3000/mcp
+{{- end }}
+
+Health check: GET /health
+MCP endpoint:  ALL /mcp  (MCP Streamable HTTP transport)

@@ -1,0 +1,6 @@
+# 1.0.0 (2026-04-01)
+
+
+### Bug Fixes
+
+* trigger initial release ([9f9e200](https://github.com/yontrack/yontrack-mcp/commit/9f9e2009a08c5c2ea7982ec731e2beaed34887ee))

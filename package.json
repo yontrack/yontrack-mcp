@@ -15,7 +15,8 @@
     "test:watch": "vitest"
   },
   "files": [
-    "build"
+    "build",
+    "yontrack.graphql"
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",

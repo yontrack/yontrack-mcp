@@ -8,6 +8,7 @@ import { registerPromotionLevelTools } from "./promotion-levels.js";
 import { registerPromotionRunTools } from "./promotion-runs.js";
 import { registerBuildLinkTools } from "./build-links.js";
 import { registerSearchTools } from "./search.js";
+import { registerGraphQLTools } from "./graphql.js";
 
 export function registerAllTools(server: McpServer) {
   registerProjectTools(server);
@@ -19,4 +20,5 @@ export function registerAllTools(server: McpServer) {
   registerPromotionRunTools(server);
   registerBuildLinkTools(server);
   registerSearchTools(server);
+  registerGraphQLTools(server);
 }

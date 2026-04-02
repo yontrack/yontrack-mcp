@@ -21,6 +21,8 @@ export YONTRACK_URL=https://your-ontrack-instance
 export YONTRACK_TOKEN=your-api-token
 ```
 
+See [Environment Variables](#environment-variables) for the full list of supported variables.
+
 ## Testing
 
 ### Unit tests
@@ -63,9 +65,12 @@ Run the container (listens on port 3000 by default):
 docker run --rm \
   -e YONTRACK_URL=https://your-ontrack-instance \
   -e YONTRACK_TOKEN=your-api-token \
+  -e YONTRACK_MUTATIONS_ENABLED=true \
   -p 3000:3000 \
   nemerosa/yontrack-mcp:latest
 ```
+
+Omit `YONTRACK_MUTATIONS_ENABLED` (or set it to `false`) to run in read-only mode.
 
 ## Kubernetes / Helm
 
@@ -91,6 +96,7 @@ helm install yontrack-mcp \
 |---|---|---|
 | `yontrack.url` | URL of the Yontrack instance | `""` |
 | `yontrack.token` | Yontrack API token | `""` |
+| `yontrack.mutationsEnabled` | Enable mutation tools (create/promote/link operations) | `false` |
 | `existingSecret` | Name of a pre-existing Secret (skips Secret creation) | `""` |
 | `service.type` | Kubernetes Service type | `ClusterIP` |
 | `service.port` | Service port | `3000` |
@@ -148,18 +154,34 @@ PORT=8080 YONTRACK_URL=... YONTRACK_TOKEN=... npm start
 
 Then register it in your MCP client as a remote server pointing to `http://localhost:3000/mcp`.
 
+Add `YONTRACK_MUTATIONS_ENABLED=true` to also expose the mutation tools.
+
 For Claude.ai, add it under **Settings → Integrations** using the public URL of your deployed instance (e.g. `https://mcp.example.com/mcp`).
+
+## Environment Variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `YONTRACK_URL` | Yes | — | URL of the Yontrack instance (e.g. `https://ontrack.example.com`) |
+| `YONTRACK_TOKEN` | Yes | — | API token for authenticating against Yontrack |
+| `YONTRACK_MUTATIONS_ENABLED` | No | `false` | Set to `true` to enable mutation tools (create/promote/link operations). When unset or `false`, only read-only query tools are registered. |
+| `PORT` | No | `3000` | Port the HTTP server listens on |
 
 ## Available Tools
 
-| Category | Tools |
-|---|---|
-| Projects | `list_projects`, `create_project` |
-| Branches | `list_branches`, `create_branch` |
-| Builds | `list_builds`, `find_build`, `create_build` |
-| Validation stamps | `list_validation_stamps`, `create_validation_stamp` |
-| Validation runs | `get_validation_runs`, `create_validation_run` |
-| Promotion levels | `list_promotion_levels`, `create_promotion_level` |
-| Promotion runs | `get_promotion_runs`, `promote_build` |
-| Build links | `get_build_links`, `set_build_links` |
-| Search | `search` |
+By default only read-only tools are available. Set `YONTRACK_MUTATIONS_ENABLED=true` to also expose the tools marked with ✎ below.
+
+| Category | Read-only tools | Mutation tools (✎) |
+|---|---|---|
+| Projects | `list_projects` | `create_project` |
+| Branches | `list_branches` | `create_branch` |
+| Builds | `list_builds`, `find_build`, `get_build_duration` | `create_build` |
+| Validation stamps | `list_validation_stamps` | `create_validation_stamp` |
+| Validation runs | `get_validation_runs` | `create_validation_run` |
+| Promotion levels | `list_promotion_levels` | `create_promotion_level` |
+| Promotion runs | `get_promotion_runs` | `promote_build` |
+| Build links | `get_build_links` | `set_build_links` |
+| Search | `search` | — |
+| GraphQL | `graphql_query` ✝ | — |
+
+> ✝ `graphql_query` is always registered but rejects requests whose query string starts with `mutation` when `YONTRACK_MUTATIONS_ENABLED` is not set.

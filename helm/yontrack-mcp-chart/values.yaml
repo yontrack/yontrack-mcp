@@ -17,6 +17,8 @@ yontrack:
   url: ""
   # Required: API token for authenticating against Yontrack
   token: ""
+  # Set to true to allow mutation tools (create/promote/link operations). Disabled by default.
+  mutationsEnabled: false
 
 service:
   type: ClusterIP

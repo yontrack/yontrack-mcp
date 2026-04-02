@@ -60,7 +60,7 @@ const CREATE_BUILD = `
   }
 `;
 
-export function registerBuildTools(server: McpServer) {
+export function registerBuildTools(server: McpServer, allowMutations: boolean) {
   server.tool(
     "list_builds",
     "List builds for a branch",
@@ -101,7 +101,7 @@ export function registerBuildTools(server: McpServer) {
     }
   );
 
-  server.tool(
+  if (allowMutations) server.tool(
     "create_build",
     "Create a new build on a branch",
     {

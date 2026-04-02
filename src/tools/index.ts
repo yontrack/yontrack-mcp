@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { mutationsEnabled } from "../config.js";
 import { registerProjectTools } from "./projects.js";
 import { registerBranchTools } from "./branches.js";
 import { registerBuildTools } from "./builds.js";
@@ -11,14 +12,14 @@ import { registerSearchTools } from "./search.js";
 import { registerGraphQLTools } from "./graphql.js";
 
 export function registerAllTools(server: McpServer) {
-  registerProjectTools(server);
-  registerBranchTools(server);
-  registerBuildTools(server);
-  registerValidationStampTools(server);
-  registerValidationRunTools(server);
-  registerPromotionLevelTools(server);
-  registerPromotionRunTools(server);
-  registerBuildLinkTools(server);
+  registerProjectTools(server, mutationsEnabled);
+  registerBranchTools(server, mutationsEnabled);
+  registerBuildTools(server, mutationsEnabled);
+  registerValidationStampTools(server, mutationsEnabled);
+  registerValidationRunTools(server, mutationsEnabled);
+  registerPromotionLevelTools(server, mutationsEnabled);
+  registerPromotionRunTools(server, mutationsEnabled);
+  registerBuildLinkTools(server, mutationsEnabled);
   registerSearchTools(server);
-  registerGraphQLTools(server);
+  registerGraphQLTools(server, mutationsEnabled);
 }

@@ -44,6 +44,8 @@ spec:
                 secretKeyRef:
                   name: {{ include "yontrack-mcp-chart.secretName" . }}
                   key: YONTRACK_TOKEN
+            - name: YONTRACK_MUTATIONS_ENABLED
+              value: {{ .Values.yontrack.mutationsEnabled | toString | quote }}
           livenessProbe:
             httpGet:
               path: /health

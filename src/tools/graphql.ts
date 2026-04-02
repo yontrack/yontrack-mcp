@@ -8,7 +8,7 @@ import { gqlClient } from "../client.js";
 const schemaPath = fileURLToPath(new URL("../../yontrack.graphql", import.meta.url));
 const schemaContent = readFileSync(schemaPath, "utf-8");
 
-export function registerGraphQLTools(server: McpServer) {
+export function registerGraphQLTools(server: McpServer, allowMutations: boolean) {
   server.resource(
     "yontrack-schema",
     "yontrack://schema",
@@ -29,6 +29,12 @@ export function registerGraphQLTools(server: McpServer) {
       variables: z.record(z.unknown()).optional().describe("Query variables"),
     },
     async ({ query, variables }) => {
+      if (!allowMutations && /^\s*mutation\b/i.test(query)) {
+        return {
+          isError: true,
+          content: [{ type: "text", text: "Mutations are disabled. Set YONTRACK_MUTATIONS_ENABLED=true to allow them." }],
+        };
+      }
       const data = await gqlClient.request(query, variables ?? {});
       return {
         content: [{ type: "text", text: JSON.stringify(data, null, 2) }],

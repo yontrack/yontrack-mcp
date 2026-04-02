@@ -3,6 +3,10 @@ import { z } from "zod";
 const ConfigSchema = z.object({
   YONTRACK_URL: z.string().url(),
   YONTRACK_TOKEN: z.string().min(1),
+  YONTRACK_MUTATIONS_ENABLED: z
+    .string()
+    .optional()
+    .transform((v) => v === "true"),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
@@ -19,3 +23,4 @@ try {
 }
 
 export const config = _config;
+export const mutationsEnabled = _config.YONTRACK_MUTATIONS_ENABLED;

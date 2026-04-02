@@ -32,7 +32,7 @@ const CREATE_PROMOTION_LEVEL = `
   }
 `;
 
-export function registerPromotionLevelTools(server: McpServer) {
+export function registerPromotionLevelTools(server: McpServer, allowMutations: boolean) {
   server.tool(
     "list_promotion_levels",
     "List all promotion levels for a branch",
@@ -52,7 +52,7 @@ export function registerPromotionLevelTools(server: McpServer) {
     }
   );
 
-  server.tool(
+  if (allowMutations) server.tool(
     "create_promotion_level",
     "Create a new promotion level on a branch",
     {

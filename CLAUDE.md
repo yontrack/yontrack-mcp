@@ -17,6 +17,7 @@ Before running the server, set required environment variables:
 ```bash
 export YONTRACK_URL=https://your-instance
 export YONTRACK_TOKEN=your-token
+export YONTRACK_MUTATIONS_ENABLED=true  # optional; enables mutation tools (default: false)
 ```
 
 ## Architecture
@@ -28,7 +29,7 @@ This is a TypeScript MCP server that exposes Yontrack (Ontrack CI/CD platform) f
 **Transport:** The server always uses Streamable HTTP transport (`POST /mcp`). It listens on `PORT` (default `3000`). A `GET /health` endpoint is also served for liveness/readiness probes.
 
 **Core modules:**
-- `src/config.ts` — Validates `YONTRACK_URL` and `YONTRACK_TOKEN` env vars via Zod; exits process on failure
+- `src/config.ts` — Validates `YONTRACK_URL` and `YONTRACK_TOKEN` env vars via Zod (exits on failure); also parses `YONTRACK_MUTATIONS_ENABLED` (optional boolean, default `false`) and exports `mutationsEnabled`
 - `src/client.ts` — Exports a `gqlClient` GraphQL client authenticated via `X-Ontrack-Token` header
 - `src/server.ts` — Exports `createServer()` factory; called once per HTTP request (stateless) or once for stdio
 - `src/utils.ts` — `resolveBranchId(project, branch)` helper that resolves names to a branch ID (required for some mutations)
@@ -59,7 +60,7 @@ The Helm chart is packaged and pushed to `oci://registry-1.docker.io/nemerosa/yo
 The chart lives in `helm/yontrack-mcp-chart/`. Key files:
 
 - `Chart.yaml` — `version`/`appVersion` are `0.0.0` placeholders; overridden by CI at release time
-- `values.yaml` — configures `yontrack.url`, `yontrack.token`, `oidc.*`, `existingSecret`, ingress, resources
+- `values.yaml` — configures `yontrack.url`, `yontrack.token`, `yontrack.mutationsEnabled`, `existingSecret`, ingress, resources
 - `templates/secret.yaml` — only rendered when `existingSecret` is empty; holds `YONTRACK_TOKEN`
 - `templates/deployment.yaml` — sets `PORT=3000`, references the secret via `yontrack-mcp-chart.secretName` helper (resolves to `existingSecret` or the chart-managed secret)
 - `templates/_helpers.tpl` — defines `yontrack-mcp-chart.secretName` in addition to the standard name/label helpers

@@ -28,7 +28,7 @@ const CREATE_BRANCH = `
   }
 `;
 
-export function registerBranchTools(server: McpServer) {
+export function registerBranchTools(server: McpServer, allowMutations: boolean) {
   server.tool(
     "list_branches",
     "List branches for a project, optionally filtered by name",
@@ -47,7 +47,7 @@ export function registerBranchTools(server: McpServer) {
     }
   );
 
-  server.tool(
+  if (allowMutations) server.tool(
     "create_branch",
     "Create a new branch in a project",
     {

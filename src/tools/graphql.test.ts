@@ -78,4 +78,29 @@ describe("graphql_query tool", () => {
 
     expect(mockRequest).toHaveBeenCalledWith(expect.any(String), {});
   });
+
+  it("rejects mutation queries when mutations are disabled", async () => {
+    const client = await createTestClient(registerGraphQLTools, false);
+    const result = await client.callTool({
+      name: "graphql_query",
+      arguments: { query: "mutation CreateBuild { createBuild(input: {}) { build { id } } }" },
+    });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as { type: string; text: string }[])[0].text;
+    expect(text).toMatch(/mutations are disabled/i);
+    expect(mockRequest).not.toHaveBeenCalled();
+  });
+
+  it("allows mutation queries when mutations are enabled", async () => {
+    mockRequest.mockResolvedValueOnce({ createBuild: { build: { id: 1 } } });
+
+    const client = await createTestClient(registerGraphQLTools, true);
+    const result = await client.callTool({
+      name: "graphql_query",
+      arguments: { query: "mutation CreateBuild { createBuild(input: {}) { build { id } } }" },
+    });
+
+    expect(result.isError).toBeFalsy();
+  });
 });

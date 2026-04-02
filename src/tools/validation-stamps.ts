@@ -32,7 +32,7 @@ const CREATE_VALIDATION_STAMP = `
   }
 `;
 
-export function registerValidationStampTools(server: McpServer) {
+export function registerValidationStampTools(server: McpServer, allowMutations: boolean) {
   server.tool(
     "list_validation_stamps",
     "List validation stamps for a branch",
@@ -53,7 +53,7 @@ export function registerValidationStampTools(server: McpServer) {
     }
   );
 
-  server.tool(
+  if (allowMutations) server.tool(
     "create_validation_stamp",
     "Create a new validation stamp on a branch",
     {

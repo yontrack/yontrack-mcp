@@ -105,6 +105,18 @@ describe("create_build", () => {
     const text = (result.content as { type: string; text: string }[])[0].text;
     expect(text).toContain("Branch not found");
   });
+
+  it("is not registered when mutations are disabled", async () => {
+    const client = await createTestClient(registerBuildTools, false);
+    const { tools } = await client.listTools();
+    expect(tools.map((t) => t.name)).not.toContain("create_build");
+  });
+
+  it("is registered when mutations are enabled", async () => {
+    const client = await createTestClient(registerBuildTools, true);
+    const { tools } = await client.listTools();
+    expect(tools.map((t) => t.name)).toContain("create_build");
+  });
 });
 
 describe("get_build_duration", () => {

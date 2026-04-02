@@ -22,7 +22,7 @@ const CREATE_PROJECT = `
   }
 `;
 
-export function registerProjectTools(server: McpServer) {
+export function registerProjectTools(server: McpServer, allowMutations: boolean) {
   server.tool(
     "list_projects",
     "List all projects in Yontrack, optionally filtered by name",
@@ -40,7 +40,7 @@ export function registerProjectTools(server: McpServer) {
     }
   );
 
-  server.tool(
+  if (allowMutations) server.tool(
     "create_project",
     "Create a new project in Yontrack",
     {

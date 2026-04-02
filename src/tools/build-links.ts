@@ -45,7 +45,7 @@ const BuildLinkInput = z.object({
   qualifier: z.string().optional().describe("Optional link qualifier"),
 });
 
-export function registerBuildLinkTools(server: McpServer) {
+export function registerBuildLinkTools(server: McpServer, allowMutations: boolean) {
   server.tool(
     "get_build_links",
     "Get dependency links for a build (builds it uses and builds that use it)",
@@ -66,7 +66,7 @@ export function registerBuildLinkTools(server: McpServer) {
     }
   );
 
-  server.tool(
+  if (allowMutations) server.tool(
     "set_build_links",
     "Set dependency links from a build to one or more target builds",
     {

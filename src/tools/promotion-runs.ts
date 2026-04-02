@@ -46,7 +46,7 @@ const PROMOTE_BUILD = `
   }
 `;
 
-export function registerPromotionRunTools(server: McpServer) {
+export function registerPromotionRunTools(server: McpServer, allowMutations: boolean) {
   server.tool(
     "get_promotion_runs",
     "Get promotion runs for a build, optionally filtered by promotion level",
@@ -68,7 +68,7 @@ export function registerPromotionRunTools(server: McpServer) {
     }
   );
 
-  server.tool(
+  if (allowMutations) server.tool(
     "promote_build",
     "Promote a build to a promotion level",
     {

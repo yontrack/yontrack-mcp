@@ -50,7 +50,7 @@ const CREATE_VALIDATION_RUN = `
   }
 `;
 
-export function registerValidationRunTools(server: McpServer) {
+export function registerValidationRunTools(server: McpServer, allowMutations: boolean) {
   server.tool(
     "get_validation_runs",
     "Get validation runs for a build, optionally filtered by validation stamp",
@@ -73,7 +73,7 @@ export function registerValidationRunTools(server: McpServer) {
     }
   );
 
-  server.tool(
+  if (allowMutations) server.tool(
     "create_validation_run",
     "Create a validation run for a build with a status",
     {

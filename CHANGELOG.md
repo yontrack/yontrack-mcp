@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/yontrack/yontrack-mcp/compare/v1.2.2...v1.3.0) (2026-04-02)
+
+
+### Features
+
+* GraphQL tools ([3f42a64](https://github.com/yontrack/yontrack-mcp/commit/3f42a64e591484ca24742c630e6f31a56f4ff48b))
+
 ## [1.2.2](https://github.com/yontrack/yontrack-mcp/compare/v1.2.1...v1.2.2) (2026-04-01)
 
 

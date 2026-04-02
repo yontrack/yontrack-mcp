@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/yontrack/yontrack-mcp/compare/v1.3.1...v1.4.0) (2026-04-02)
+
+
+### Features
+
+* restricting the access to the mutations ([8d464fa](https://github.com/yontrack/yontrack-mcp/commit/8d464fadedafaf73235f50a931eee6912b9d1024))
+
 ## [1.3.1](https://github.com/yontrack/yontrack-mcp/compare/v1.3.0...v1.3.1) (2026-04-02)
 
 

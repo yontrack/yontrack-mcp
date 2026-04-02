@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/yontrack/yontrack-mcp/compare/v1.3.0...v1.3.1) (2026-04-02)
+
+
+### Bug Fixes
+
+* missing GraphQL file ([1aa6890](https://github.com/yontrack/yontrack-mcp/commit/1aa6890ab2b723a4d028eea82bfe2036d9ca77e4))
+
 # [1.3.0](https://github.com/yontrack/yontrack-mcp/compare/v1.2.2...v1.3.0) (2026-04-02)
 
 

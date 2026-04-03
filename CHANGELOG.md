@@ -1,3 +1,10 @@
+## [1.5.3](https://github.com/yontrack/yontrack-mcp/compare/v1.5.2...v1.5.3) (2026-04-03)
+
+
+### Bug Fixes
+
+* logging ([0f4b1cf](https://github.com/yontrack/yontrack-mcp/commit/0f4b1cff936f534edd03547a4c842cfc1606314c))
+
 ## [1.5.2](https://github.com/yontrack/yontrack-mcp/compare/v1.5.1...v1.5.2) (2026-04-03)
 
 

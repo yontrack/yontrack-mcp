@@ -24,3 +24,9 @@ try {
 
 export const config = _config;
 export const mutationsEnabled = _config.YONTRACK_MUTATIONS_ENABLED;
+
+// OAuth2 is enabled when both SERVER_URL and AUTH_PASSWORD are provided
+const serverUrl = process.env.YONTRACK_MCP_SERVER_URL;
+const authPassword = process.env.YONTRACK_MCP_AUTH_PASSWORD;
+export const oauthConfig =
+  serverUrl && authPassword ? { serverUrl, authPassword } : null;

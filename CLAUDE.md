@@ -17,7 +17,9 @@ Before running the server, set required environment variables:
 ```bash
 export YONTRACK_URL=https://your-instance
 export YONTRACK_TOKEN=your-token
-export YONTRACK_MUTATIONS_ENABLED=true  # optional; enables mutation tools (default: false)
+export YONTRACK_MUTATIONS_ENABLED=true              # optional; enables mutation tools (default: false)
+export YONTRACK_MCP_SERVER_URL=https://example.com  # optional; enables OAuth2 when set with AUTH_PASSWORD
+export YONTRACK_MCP_AUTH_PASSWORD=secret            # optional; enables OAuth2 when set with SERVER_URL
 ```
 
 ## Architecture
@@ -26,13 +28,19 @@ This is a TypeScript MCP server that exposes Yontrack (Ontrack CI/CD platform) f
 
 **Entry flow:** `src/index.ts` → `src/server.ts` (creates McpServer via factory) → `src/tools/index.ts` (registers all tools)
 
-**Transport:** The server always uses Streamable HTTP transport (`POST /mcp`). It listens on `PORT` (default `3000`). A `GET /health` endpoint is also served for liveness/readiness probes.
+**Transport:** The server uses Streamable HTTP transport (`POST /mcp`) via an Express app. It listens on `PORT` (default `3000`). A `GET /health` endpoint is also served for liveness/readiness probes.
 
 **Core modules:**
-- `src/config.ts` — Validates `YONTRACK_URL` and `YONTRACK_TOKEN` env vars via Zod (exits on failure); also parses `YONTRACK_MUTATIONS_ENABLED` (optional boolean, default `false`) and exports `mutationsEnabled`
+- `src/config.ts` — Validates `YONTRACK_URL` and `YONTRACK_TOKEN` env vars via Zod (exits on failure); also parses `YONTRACK_MUTATIONS_ENABLED` (optional boolean, default `false`) and exports `mutationsEnabled`; exports `oauthConfig` (non-null when both `YONTRACK_MCP_SERVER_URL` and `YONTRACK_MCP_AUTH_PASSWORD` are set)
 - `src/client.ts` — Exports a `gqlClient` GraphQL client authenticated via `X-Ontrack-Token` header
-- `src/server.ts` — Exports `createServer()` factory; called once per HTTP request (stateless) or once for stdio
+- `src/server.ts` — Exports `createServer()` factory; called once per HTTP request (stateless)
+- `src/auth.ts` — OAuth2 provider implementation (in-memory token stores, HTML authorization form, PKCE support); exports `createOAuthProvider`, `clientsStore`, `generateAuthCode`, `renderAuthFormHtml`
 - `src/utils.ts` — `resolveBranchId(project, branch)` helper that resolves names to a branch ID (required for some mutations)
+
+**OAuth2 flow (when `oauthConfig` is set):**
+- `POST /authorize/login` (registered first to avoid body-stream conflict with SDK's `/authorize` prefix handler)
+- `app.use(mcpAuthRouter(...))` — mounts `/.well-known/oauth-authorization-server`, `/authorize`, `/token`, `/register`, `/revoke`
+- `/mcp` is protected by `requireBearerAuth` middleware from the SDK
 
 **Tools** (24 total across 9 files in `src/tools/`): projects, branches, builds, validation stamps, validation runs, promotion levels, promotion runs, build links, search.
 
@@ -60,9 +68,9 @@ The Helm chart is packaged and pushed to `oci://registry-1.docker.io/nemerosa/yo
 The chart lives in `helm/yontrack-mcp-chart/`. Key files:
 
 - `Chart.yaml` — `version`/`appVersion` are `0.0.0` placeholders; overridden by CI at release time
-- `values.yaml` — configures `yontrack.url`, `yontrack.token`, `yontrack.mutationsEnabled`, `existingSecret`, ingress, resources
-- `templates/secret.yaml` — only rendered when `existingSecret` is empty; holds `YONTRACK_TOKEN`
-- `templates/deployment.yaml` — sets `PORT=3000`, references the secret via `yontrack-mcp-chart.secretName` helper (resolves to `existingSecret` or the chart-managed secret)
+- `values.yaml` — configures `yontrack.url`, `yontrack.token`, `yontrack.mutationsEnabled`, `oauth.serverUrl`, `oauth.authPassword`, `existingSecret`, ingress, resources
+- `templates/secret.yaml` — only rendered when `existingSecret` is empty; holds `YONTRACK_TOKEN` and (when OAuth is enabled) `YONTRACK_MCP_AUTH_PASSWORD`
+- `templates/deployment.yaml` — sets `PORT=3000`, injects OAuth env vars when `oauth.serverUrl` is non-empty, references the secret via `yontrack-mcp-chart.secretName` helper (resolves to `existingSecret` or the chart-managed secret)
 - `templates/_helpers.tpl` — defines `yontrack-mcp-chart.secretName` in addition to the standard name/label helpers
 
 ## Yontrack GraphQL API Gotchas

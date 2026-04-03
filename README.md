@@ -72,6 +72,18 @@ docker run --rm \
 
 Omit `YONTRACK_MUTATIONS_ENABLED` (or set it to `false`) to run in read-only mode.
 
+To enable OAuth2 (required for claude.ai), add the two OAuth variables:
+
+```bash
+docker run --rm \
+  -e YONTRACK_URL=https://your-ontrack-instance \
+  -e YONTRACK_TOKEN=your-api-token \
+  -e YONTRACK_MCP_SERVER_URL=https://mcp.example.com \
+  -e YONTRACK_MCP_AUTH_PASSWORD=some-strong-password \
+  -p 3000:3000 \
+  nemerosa/yontrack-mcp:latest
+```
+
 ## Kubernetes / Helm
 
 A Helm chart is published to Docker Hub as an OCI image alongside every release:
@@ -97,6 +109,8 @@ helm install yontrack-mcp \
 | `yontrack.url` | URL of the Yontrack instance | `""` |
 | `yontrack.token` | Yontrack API token | `""` |
 | `yontrack.mutationsEnabled` | Enable mutation tools (create/promote/link operations) | `false` |
+| `oauth.serverUrl` | Public HTTPS URL of this server — enables OAuth2 when set with `oauth.authPassword` | `""` |
+| `oauth.authPassword` | Password for the browser authorization form — enables OAuth2 when set with `oauth.serverUrl` | `""` |
 | `existingSecret` | Name of a pre-existing Secret (skips Secret creation) | `""` |
 | `service.type` | Kubernetes Service type | `ClusterIP` |
 | `service.port` | Service port | `3000` |
@@ -112,6 +126,7 @@ helm install yontrack-mcp \
 When credentials are managed externally (e.g. External Secrets Operator, Vault, or a manually created Secret), set `existingSecret` to skip Secret creation. The referenced Secret must contain:
 
 - `YONTRACK_TOKEN`
+- `YONTRACK_MCP_AUTH_PASSWORD` (when OAuth2 is enabled)
 
 ```bash
 helm install yontrack-mcp \
@@ -123,12 +138,12 @@ helm install yontrack-mcp \
 
 ### Ingress example
 
+**Without OAuth2** — expose only the `/mcp` endpoint:
+
 ```yaml
 ingress:
   enabled: true
   className: nginx
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
   hosts:
     - host: mcp.example.com
       paths:
@@ -140,11 +155,36 @@ ingress:
         - mcp.example.com
 ```
 
-The MCP endpoint is then available at `https://mcp.example.com/mcp`.
+**With OAuth2** — all paths must be reachable (OAuth2 discovery, `/authorize`, `/token`, etc.):
+
+```yaml
+oauth:
+  serverUrl: https://mcp.example.com
+  authPassword: some-strong-password
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: mcp.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: mcp-tls
+      hosts:
+        - mcp.example.com
+```
+
+The MCP endpoint is available at `https://mcp.example.com/mcp`.
 
 ## Usage with Claude Desktop / Claude.ai
 
-The server exposes a Streamable HTTP transport (MCP spec 2025-03-26) on `POST /mcp`. Start it locally:
+The server exposes a Streamable HTTP transport (MCP spec 2025-03-26) on `POST /mcp`.
+
+### Local / Claude Desktop (no auth)
+
+Start the server locally:
 
 ```bash
 YONTRACK_URL=https://your-ontrack-instance YONTRACK_TOKEN=your-api-token npm start
@@ -152,11 +192,33 @@ YONTRACK_URL=https://your-ontrack-instance YONTRACK_TOKEN=your-api-token npm sta
 PORT=8080 YONTRACK_URL=... YONTRACK_TOKEN=... npm start
 ```
 
-Then register it in your MCP client as a remote server pointing to `http://localhost:3000/mcp`.
+Register it in your MCP client as a remote server at `http://localhost:3000/mcp`.
 
 Add `YONTRACK_MUTATIONS_ENABLED=true` to also expose the mutation tools.
 
-For Claude.ai, add it under **Settings → Integrations** using the public URL of your deployed instance (e.g. `https://mcp.example.com/mcp`).
+### Claude.ai (OAuth2 required)
+
+Claude.ai requires OAuth2 for remote MCP servers. To enable it, set two additional environment variables alongside the standard ones:
+
+```bash
+export YONTRACK_MCP_SERVER_URL=https://mcp.example.com   # public HTTPS URL of this server
+export YONTRACK_MCP_AUTH_PASSWORD=some-strong-password   # users enter this in the browser
+```
+
+Both must be set together; either alone is ignored and the server starts without authentication.
+
+**First-time connection flow:**
+
+1. In Claude.ai go to **Settings → Integrations** and add `https://mcp.example.com/mcp` as a new integration.
+2. Claude.ai auto-discovers the OAuth2 endpoints via `/.well-known/oauth-authorization-server`.
+3. Claude.ai registers itself as a client automatically (dynamic client registration — no manual client ID/secret needed).
+4. You are redirected to the server's authorization page where you enter the configured password.
+5. After approval, Claude.ai receives a Bearer token valid for 1 hour (refresh tokens last 30 days).
+6. Subsequent requests use the token silently; you re-authorize only after the refresh token expires.
+
+> **HTTPS required.** `YONTRACK_MCP_SERVER_URL` must use `https://`. For local testing only, `http://localhost` is also accepted.
+
+> **Tokens are in-memory.** All issued tokens are lost when the server restarts. Users will be prompted to re-authorize after a restart.
 
 ## Environment Variables
 
@@ -165,6 +227,8 @@ For Claude.ai, add it under **Settings → Integrations** using the public URL o
 | `YONTRACK_URL` | Yes | — | URL of the Yontrack instance (e.g. `https://ontrack.example.com`) |
 | `YONTRACK_TOKEN` | Yes | — | API token for authenticating against Yontrack |
 | `YONTRACK_MUTATIONS_ENABLED` | No | `false` | Set to `true` to enable mutation tools (create/promote/link operations). When unset or `false`, only read-only query tools are registered. |
+| `YONTRACK_MCP_SERVER_URL` | No | — | Public HTTPS URL of this server. When set together with `YONTRACK_MCP_AUTH_PASSWORD`, enables OAuth2 (required for claude.ai). |
+| `YONTRACK_MCP_AUTH_PASSWORD` | No | — | Password users must enter in the browser authorization form. Required together with `YONTRACK_MCP_SERVER_URL` to enable OAuth2. |
 | `PORT` | No | `3000` | Port the HTTP server listens on |
 
 ## Available Tools

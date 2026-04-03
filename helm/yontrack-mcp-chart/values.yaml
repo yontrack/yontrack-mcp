@@ -8,7 +8,8 @@ image:
 
 # Name of an existing Secret to use for credentials.
 # If set, the chart will not create a Secret and will reference this one instead.
-# The secret must contain YONTRACK_TOKEN, and OIDC_CLIENT_ID + OIDC_CLIENT_SECRET if oidc.enabled.
+# When OAuth2 is enabled the secret must contain YONTRACK_TOKEN and YONTRACK_MCP_AUTH_PASSWORD.
+# Without OAuth2 it only needs YONTRACK_TOKEN.
 existingSecret: ""
 
 # Target Yontrack instance
@@ -19,6 +20,15 @@ yontrack:
   token: ""
   # Set to true to allow mutation tools (create/promote/link operations). Disabled by default.
   mutationsEnabled: false
+
+# OAuth2 authentication (required for claude.ai)
+# Both fields must be set together to enable OAuth2. When enabled, the /mcp endpoint
+# requires a Bearer token obtained via the authorization code flow.
+oauth:
+  # Public HTTPS URL of this server (e.g. https://mcp.example.com). Must be HTTPS.
+  serverUrl: ""
+  # Password that users must enter in the browser authorization form.
+  authPassword: ""
 
 service:
   type: ClusterIP

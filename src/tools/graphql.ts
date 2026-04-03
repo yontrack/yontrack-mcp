@@ -23,7 +23,7 @@ export function registerGraphQLTools(server: McpServer, allowMutations: boolean)
 
   server.tool(
     "graphql_query",
-    "Execute a raw GraphQL query against the Yontrack API. Use this when no existing tool covers your exact data needs — especially for queries that fetch multiple related entities in a single round-trip (e.g. builds with their promotion runs, validation runs, or build links). Read the yontrack://schema resource first to understand available fields.",
+    "Execute a raw GraphQL query against the Yontrack API. Prefer this over the simpler tools whenever: (1) no existing tool covers the exact data needed, (2) the task would otherwise require calling simpler tools in a loop (N+1 pattern — e.g. fetching validation runs for each of N builds), or (3) multiple related entities can be retrieved in a single round-trip (e.g. builds with their promotion runs and build links). Read the yontrack://schema resource first to understand available types and fields.",
     {
       query: z.string().describe("GraphQL query string"),
       variables: z.record(z.unknown()).optional().describe("Query variables"),

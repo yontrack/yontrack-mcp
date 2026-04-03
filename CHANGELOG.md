@@ -1,3 +1,16 @@
+# [1.6.0](https://github.com/yontrack/yontrack-mcp/compare/v1.5.4...v1.6.0) (2026-04-03)
+
+
+### Bug Fixes
+
+* move instructions to McpServer options second argument ([c372e75](https://github.com/yontrack/yontrack-mcp/commit/c372e75fa72e9bb55b7e868a4128caf4d0671c19))
+* suppress /health endpoint from request logs ([a118773](https://github.com/yontrack/yontrack-mcp/commit/a118773ed6e59ade2c5d5c5070eb07ef912d97ff))
+
+
+### Features
+
+* instructions about preferring GraphQL for complex queries ([d52786c](https://github.com/yontrack/yontrack-mcp/commit/d52786c732c8ca22c98cce32580b85cb85c4e881))
+
 ## [1.5.4](https://github.com/yontrack/yontrack-mcp/compare/v1.5.3...v1.5.4) (2026-04-03)
 
 

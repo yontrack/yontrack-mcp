@@ -16,6 +16,11 @@ import {
 const port = parseInt(process.env.PORT ?? "3000", 10);
 const app = express();
 
+// Trust the first reverse proxy (e.g. Kubernetes ingress controller).
+// Required for express-rate-limit (used by the OAuth2 handlers) to work correctly
+// when X-Forwarded-For is set by the ingress.
+app.set("trust proxy", 1);
+
 // Health check
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });

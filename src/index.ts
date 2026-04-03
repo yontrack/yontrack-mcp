@@ -21,6 +21,16 @@ const app = express();
 // when X-Forwarded-For is set by the ingress.
 app.set("trust proxy", 1);
 
+// Log every request for diagnostics
+app.use((req, res, next) => {
+  res.on("finish", () => {
+    process.stderr.write(
+      `${req.method} ${req.originalUrl} → ${res.statusCode}\n`
+    );
+  });
+  next();
+});
+
 // Health check
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });

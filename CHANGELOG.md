@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/yontrack/yontrack-mcp/compare/v1.7.0...v1.8.0) (2026-04-03)
+
+
+### Features
+
+* serve server icon and advertise it in MCP server info ([e69c34f](https://github.com/yontrack/yontrack-mcp/commit/e69c34f6d7660316cfa7cc136ef3ef2b9ff95868))
+
 # [1.7.0](https://github.com/yontrack/yontrack-mcp/compare/v1.6.0...v1.7.0) (2026-04-03)
 
 

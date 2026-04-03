@@ -33,6 +33,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Static assets (e.g. server icon)
+app.use(express.static("public"));
+
 // Health check
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
@@ -40,7 +43,7 @@ app.get("/health", (_req, res) => {
 
 // MCP request handler
 async function handleMcp(req: Request, res: Response) {
-  const server = createServer();
+  const server = createServer(oauthConfig?.serverUrl);
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
   });

@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/yontrack/yontrack-mcp/compare/v1.6.0...v1.7.0) (2026-04-03)
+
+
+### Features
+
+* instruct Claude to prefer displayName over name when displaying entities ([ad27841](https://github.com/yontrack/yontrack-mcp/commit/ad27841365620a0ffb93800b80d8b3dcb20dc8d2))
+
 # [1.6.0](https://github.com/yontrack/yontrack-mcp/compare/v1.5.4...v1.6.0) (2026-04-03)
 
 

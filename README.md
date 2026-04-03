@@ -111,6 +111,10 @@ helm install yontrack-mcp \
 | `yontrack.mutationsEnabled` | Enable mutation tools (create/promote/link operations) | `false` |
 | `oauth.serverUrl` | Public HTTPS URL of this server — enables OAuth2 when set with `oauth.authPassword` | `""` |
 | `oauth.authPassword` | Password for the browser authorization form — enables OAuth2 when set with `oauth.serverUrl` | `""` |
+| `persistence.enabled` | Create a PVC and mount it at `/data`; sets the clients file to `/data/clients.json` | `true` |
+| `persistence.size` | PVC size | `10Mi` |
+| `persistence.storageClass` | Storage class name (empty = cluster default) | `""` |
+| `persistence.accessMode` | PVC access mode | `ReadWriteOnce` |
 | `existingSecret` | Name of a pre-existing Secret (skips Secret creation) | `""` |
 | `service.type` | Kubernetes Service type | `ClusterIP` |
 | `service.port` | Service port | `3000` |
@@ -229,6 +233,7 @@ Both must be set together; either alone is ignored and the server starts without
 | `YONTRACK_MUTATIONS_ENABLED` | No | `false` | Set to `true` to enable mutation tools (create/promote/link operations). When unset or `false`, only read-only query tools are registered. |
 | `YONTRACK_MCP_SERVER_URL` | No | — | Public HTTPS URL of this server. When set together with `YONTRACK_MCP_AUTH_PASSWORD`, enables OAuth2 (required for claude.ai). |
 | `YONTRACK_MCP_AUTH_PASSWORD` | No | — | Password users must enter in the browser authorization form. Required together with `YONTRACK_MCP_SERVER_URL` to enable OAuth2. |
+| `YONTRACK_MCP_CLIENTS_FILE` | No | `./yontrack-mcp-clients.json` | File path where registered OAuth2 clients are persisted so they survive restarts. The Helm chart sets this automatically to `/data/clients.json` when `persistence.enabled` is true. |
 | `PORT` | No | `3000` | Port the HTTP server listens on |
 
 ## Available Tools

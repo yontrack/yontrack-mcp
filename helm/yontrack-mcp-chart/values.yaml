@@ -22,13 +22,23 @@ yontrack:
   mutationsEnabled: false
 
 # OAuth2 authentication (required for claude.ai)
-# Both fields must be set together to enable OAuth2. When enabled, the /mcp endpoint
-# requires a Bearer token obtained via the authorization code flow.
+# Both serverUrl and authPassword must be set together to enable OAuth2. When enabled,
+# the /mcp endpoint requires a Bearer token obtained via the authorization code flow.
 oauth:
   # Public HTTPS URL of this server (e.g. https://mcp.example.com). Must be HTTPS.
   serverUrl: ""
   # Password that users must enter in the browser authorization form.
   authPassword: ""
+
+# Persistent storage for OAuth2 client registrations.
+# Enabled by default when OAuth2 is in use so that registered clients survive pod restarts.
+# The volume is mounted at /data; the clients file is written to /data/clients.json.
+persistence:
+  enabled: true
+  size: 10Mi
+  # Storage class to use. Leave empty to use the cluster default.
+  storageClass: ""
+  accessMode: ReadWriteOnce
 
 service:
   type: ClusterIP

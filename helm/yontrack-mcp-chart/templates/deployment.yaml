@@ -54,7 +54,16 @@ spec:
                 secretKeyRef:
                   name: {{ include "yontrack-mcp-chart.secretName" . }}
                   key: YONTRACK_MCP_AUTH_PASSWORD
+            {{- if .Values.persistence.enabled }}
+            - name: YONTRACK_MCP_CLIENTS_FILE
+              value: /data/clients.json
             {{- end }}
+            {{- end }}
+          {{- if .Values.persistence.enabled }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          {{- end }}
           livenessProbe:
             httpGet:
               path: /health
@@ -71,6 +80,12 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+      {{- if .Values.persistence.enabled }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "yontrack-mcp-chart.fullname" . }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

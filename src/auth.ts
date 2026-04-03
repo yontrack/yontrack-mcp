@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import fs from "node:fs";
 import type { Response } from "express";
 import type {
   OAuthServerProvider,
@@ -19,6 +20,12 @@ const ACCESS_TOKEN_TTL_S = 3600; // 1 hour
 const REFRESH_TOKEN_TTL_S = 30 * 24 * 3600; // 30 days
 const AUTH_CODE_TTL_S = 600; // 10 minutes
 
+// Path to persist registered clients across restarts.
+// Configure via YONTRACK_MCP_CLIENTS_FILE; defaults to the current directory.
+// In Kubernetes, mount a PVC at the chosen path to survive pod replacements.
+const CLIENTS_FILE =
+  process.env.YONTRACK_MCP_CLIENTS_FILE ?? "./yontrack-mcp-clients.json";
+
 interface AuthCodeRecord {
   clientId: string;
   codeChallenge: string;
@@ -34,10 +41,29 @@ interface TokenRecord {
   expiresAt: number;
 }
 
-const clients = new Map<string, OAuthClientInformationFull>();
+// Registered clients are persisted to disk so they survive restarts.
+// Tokens and auth codes remain in-memory (short-lived, re-auth is fast).
+const clients = new Map<string, OAuthClientInformationFull>(loadClients());
 const authCodes = new Map<string, AuthCodeRecord>();
 const accessTokens = new Map<string, TokenRecord>();
 const refreshTokens = new Map<string, TokenRecord>();
+
+function loadClients(): [string, OAuthClientInformationFull][] {
+  try {
+    const raw = fs.readFileSync(CLIENTS_FILE, "utf-8");
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+function persistClients(): void {
+  try {
+    fs.writeFileSync(CLIENTS_FILE, JSON.stringify([...clients]), "utf-8");
+  } catch (err) {
+    process.stderr.write(`Failed to persist OAuth clients: ${err}\n`);
+  }
+}
 
 function generateToken(): string {
   return crypto.randomBytes(32).toString("hex");
@@ -60,6 +86,7 @@ export const clientsStore: OAuthRegisteredClientsStore = {
   },
   async registerClient(client: OAuthClientInformationFull) {
     clients.set(client.client_id, client);
+    persistClients();
     return client;
   },
 };

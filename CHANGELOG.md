@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/yontrack/yontrack-mcp/compare/v1.5.0...v1.5.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* trusting the proxy ([2bf0115](https://github.com/yontrack/yontrack-mcp/commit/2bf0115964a351949a75e14515e4742a1505266f))
+
 # [1.5.0](https://github.com/yontrack/yontrack-mcp/compare/v1.4.0...v1.5.0) (2026-04-03)
 
 

@@ -38,9 +38,29 @@ async function handleMcp(req: Request, res: Response) {
   await transport.handleRequest(req as any, res as any, req.body);
 }
 
+function oauthLog(msg: string): void {
+  process.stderr.write(`[oauth] ${msg}\n`);
+}
+
 if (oauthConfig) {
   const { serverUrl, authPassword } = oauthConfig;
   const provider = createOAuthProvider(serverUrl);
+
+  // Log all incoming OAuth-related requests for easier diagnostics
+  app.use(
+    [
+      "/.well-known/oauth-authorization-server",
+      "/.well-known/oauth-protected-resource",
+      "/authorize",
+      "/token",
+      "/register",
+      "/revoke",
+    ],
+    (req, _res, next) => {
+      oauthLog(`${req.method} ${req.path}`);
+      next();
+    }
+  );
 
   // Login form submission must be registered BEFORE mcpAuthRouter because the
   // SDK's /authorize handler (prefix-matched) also runs urlencoded() middleware
@@ -60,6 +80,7 @@ if (oauthConfig) {
 
       const client = await clientsStore.getClient(client_id);
       if (!client) {
+        oauthLog(`ERROR: Login attempt for unknown client: ${client_id}`);
         res
           .status(400)
           .json({ error: "invalid_client", error_description: "Unknown client" });
@@ -67,6 +88,7 @@ if (oauthConfig) {
       }
 
       if (!password || password !== authPassword) {
+        oauthLog(`Login failed — wrong password for client ${client_id}`);
         res.setHeader("Content-Type", "text/html; charset=utf-8");
         res.end(
           renderAuthFormHtml({
@@ -91,6 +113,7 @@ if (oauthConfig) {
         state: state || undefined,
       });
 
+      oauthLog(`Login successful for client ${client_id}, redirecting with auth code`);
       const redirectUrl = new URL(redirect_uri);
       redirectUrl.searchParams.set("code", code);
       if (state) redirectUrl.searchParams.set("state", state);

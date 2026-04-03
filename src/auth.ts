@@ -14,7 +14,12 @@ import type { AuthInfo } from "@modelcontextprotocol/sdk/server/auth/types.js";
 import {
   InvalidGrantError,
   InvalidScopeError,
+  InvalidTokenError,
 } from "@modelcontextprotocol/sdk/server/auth/errors.js";
+
+function log(msg: string): void {
+  process.stderr.write(`[oauth] ${msg}\n`);
+}
 
 const ACCESS_TOKEN_TTL_S = 3600; // 1 hour
 const REFRESH_TOKEN_TTL_S = 30 * 24 * 3600; // 30 days
@@ -51,8 +56,11 @@ const refreshTokens = new Map<string, TokenRecord>();
 function loadClients(): [string, OAuthClientInformationFull][] {
   try {
     const raw = fs.readFileSync(CLIENTS_FILE, "utf-8");
-    return JSON.parse(raw);
+    const entries: [string, OAuthClientInformationFull][] = JSON.parse(raw);
+    log(`Loaded ${entries.length} client(s) from ${CLIENTS_FILE}`);
+    return entries;
   } catch {
+    log(`No existing clients file at ${CLIENTS_FILE}, starting fresh`);
     return [];
   }
 }
@@ -60,8 +68,9 @@ function loadClients(): [string, OAuthClientInformationFull][] {
 function persistClients(): void {
   try {
     fs.writeFileSync(CLIENTS_FILE, JSON.stringify([...clients]), "utf-8");
+    log(`Persisted ${clients.size} client(s) to ${CLIENTS_FILE}`);
   } catch (err) {
-    process.stderr.write(`Failed to persist OAuth clients: ${err}\n`);
+    log(`ERROR: Failed to persist OAuth clients: ${err}`);
   }
 }
 
@@ -82,10 +91,13 @@ export function generateAuthCode(
 
 export const clientsStore: OAuthRegisteredClientsStore = {
   async getClient(clientId: string) {
-    return clients.get(clientId);
+    const client = clients.get(clientId);
+    if (!client) log(`Client not found: ${clientId}`);
+    return client;
   },
   async registerClient(client: OAuthClientInformationFull) {
     clients.set(client.client_id, client);
+    log(`Registered client: ${client.client_id} (${client.client_name ?? "unnamed"})`);
     persistClients();
     return client;
   },
@@ -157,6 +169,7 @@ export function createOAuthProvider(serverUrl: string): OAuthServerProvider {
       params: AuthorizationParams,
       res: Response
     ) {
+      log(`Authorize request for client: ${client.client_id} (${client.client_name ?? "unnamed"})`);
       const html = renderAuthFormHtml({
         serverUrl,
         clientName: client.client_name ?? client.client_id,
@@ -176,6 +189,7 @@ export function createOAuthProvider(serverUrl: string): OAuthServerProvider {
     ) {
       const record = authCodes.get(authorizationCode);
       if (!record || record.clientId !== client.client_id) {
+        log(`ERROR: Auth code not found or client mismatch for client ${client.client_id}`);
         throw new InvalidGrantError("Invalid authorization code");
       }
       return record.codeChallenge;
@@ -187,13 +201,16 @@ export function createOAuthProvider(serverUrl: string): OAuthServerProvider {
     ) {
       const record = authCodes.get(authorizationCode);
       if (!record || record.clientId !== client.client_id) {
+        log(`ERROR: Auth code exchange failed — code not found for client ${client.client_id}`);
         throw new InvalidGrantError("Invalid authorization code");
       }
       if (record.expiresAt < Date.now() / 1000) {
         authCodes.delete(authorizationCode);
+        log(`ERROR: Auth code expired for client ${client.client_id}`);
         throw new InvalidGrantError("Authorization code has expired");
       }
       authCodes.delete(authorizationCode);
+      log(`Auth code exchanged for client ${client.client_id}`);
 
       const now = Math.floor(Date.now() / 1000);
       const accessToken = generateToken();
@@ -226,12 +243,15 @@ export function createOAuthProvider(serverUrl: string): OAuthServerProvider {
     ) {
       const record = refreshTokens.get(refreshToken);
       if (!record || record.clientId !== client.client_id) {
+        log(`ERROR: Refresh token not found for client ${client.client_id} (likely lost after restart — user must re-authorize)`);
         throw new InvalidGrantError("Invalid refresh token");
       }
       if (record.expiresAt < Date.now() / 1000) {
         refreshTokens.delete(refreshToken);
+        log(`ERROR: Refresh token expired for client ${client.client_id}`);
         throw new InvalidGrantError("Refresh token has expired");
       }
+      log(`Refresh token exchanged for client ${client.client_id}`);
 
       const requestedScopes = scopes?.length ? scopes : record.scopes;
       const invalid = requestedScopes.filter((s) => !record.scopes.includes(s));
@@ -267,7 +287,8 @@ export function createOAuthProvider(serverUrl: string): OAuthServerProvider {
     async verifyAccessToken(token: string): Promise<AuthInfo> {
       const record = accessTokens.get(token);
       if (!record) {
-        throw new Error("Invalid access token");
+        log(`ERROR: Access token not found (likely lost after restart — user must re-authorize)`);
+        throw new InvalidTokenError("Invalid access token");
       }
       return {
         token,

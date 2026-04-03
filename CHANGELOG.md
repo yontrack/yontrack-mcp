@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/yontrack/yontrack-mcp/compare/v1.4.0...v1.5.0) (2026-04-03)
+
+
+### Features
+
+* OIDC authentication ([e3b45d7](https://github.com/yontrack/yontrack-mcp/commit/e3b45d75d287e6fa6803f1eb9edf939910de4064))
+
 # [1.4.0](https://github.com/yontrack/yontrack-mcp/compare/v1.3.1...v1.4.0) (2026-04-02)
 
 

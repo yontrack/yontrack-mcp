@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/yontrack/yontrack-mcp/compare/v1.9.0...v1.9.1) (2026-04-18)
+
+
+### Bug Fixes
+
+* add conversion, decoding, and metadata policy strategies to ExternalSecret ([81c4b29](https://github.com/yontrack/yontrack-mcp/commit/81c4b29c13be293177f3b4d971adc0de582475af))
+
 # [1.9.0](https://github.com/yontrack/yontrack-mcp/compare/v1.8.0...v1.9.0) (2026-04-18)
 
 

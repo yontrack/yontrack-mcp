@@ -12,11 +12,37 @@ image:
 # Without OAuth2 it only needs YONTRACK_TOKEN.
 existingSecret: ""
 
+# External Secrets Operator (ESO) integration.
+# When enabled, the chart renders an ExternalSecret CRD instead of creating a Secret directly.
+# ESO will fetch the credentials from the configured backend (e.g. Vault) and write them into
+# a Kubernetes Secret with the same name the chart would otherwise create.
+# existingSecret takes precedence: if set, this block is ignored.
+externalSecrets:
+  enabled: false
+  # How often ESO should refresh the secret from the backend.
+  refreshInterval: "1h"
+  secretStoreRef:
+    # Required: name of the SecretStore or ClusterSecretStore to use.
+    name: ""
+    # Kind of the store: SecretStore (namespace-scoped) or ClusterSecretStore (cluster-scoped).
+    kind: SecretStore
+  data:
+    yontrackToken:
+      # Required: path/key in the backend that holds the Yontrack API token.
+      # Example for Vault KV v2: "secret/yontrack"
+      key: ""
+      # Optional: sub-field within the secret entry (leave empty if the value is the whole entry).
+      property: ""
+    authPassword:
+      # Required when OAuth2 is enabled: path/key in the backend for the auth password.
+      key: ""
+      property: ""
+
 # Target Yontrack instance
 yontrack:
   # Required: URL of the Yontrack instance (e.g. https://ontrack.example.com)
   url: ""
-  # Required: API token for authenticating against Yontrack
+  # Optional: API token for authenticating against Yontrack
   token: ""
   # Set to true to allow mutation tools (create/promote/link operations). Disabled by default.
   mutationsEnabled: false

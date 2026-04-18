@@ -116,6 +116,14 @@ helm install yontrack-mcp \
 | `persistence.storageClass` | Storage class name (empty = cluster default) | `""` |
 | `persistence.accessMode` | PVC access mode | `ReadWriteOnce` |
 | `existingSecret` | Name of a pre-existing Secret (skips Secret creation) | `""` |
+| `externalSecrets.enabled` | Render an `ExternalSecret` CRD instead of creating a Secret | `false` |
+| `externalSecrets.refreshInterval` | How often ESO refreshes credentials from the backend | `"1h"` |
+| `externalSecrets.secretStoreRef.name` | Name of the `SecretStore` or `ClusterSecretStore` | `""` |
+| `externalSecrets.secretStoreRef.kind` | Kind of the store (`SecretStore` or `ClusterSecretStore`) | `SecretStore` |
+| `externalSecrets.data.yontrackToken.key` | Backend path for `YONTRACK_TOKEN` | `""` |
+| `externalSecrets.data.yontrackToken.property` | Sub-field within the backend entry (leave empty for the whole value) | `""` |
+| `externalSecrets.data.authPassword.key` | Backend path for `YONTRACK_MCP_AUTH_PASSWORD` (OAuth2 only) | `""` |
+| `externalSecrets.data.authPassword.property` | Sub-field within the backend entry (leave empty for the whole value) | `""` |
 | `service.type` | Kubernetes Service type | `ClusterIP` |
 | `service.port` | Service port | `3000` |
 | `ingress.enabled` | Enable Ingress resource | `false` |
@@ -125,9 +133,25 @@ helm install yontrack-mcp \
 | `image.tag` | Image tag override (defaults to chart `appVersion`) | `""` |
 | `resources` | Pod resource requests/limits | `{}` |
 
-### Using an existing Secret
+### Secret management
 
-When credentials are managed externally (e.g. External Secrets Operator, Vault, or a manually created Secret), set `existingSecret` to skip Secret creation. The referenced Secret must contain:
+The chart supports three mutually exclusive modes for injecting credentials. `existingSecret` takes precedence over `externalSecrets.enabled`; if neither is set the chart creates the Secret itself.
+
+#### Chart-managed Secret (default)
+
+Credentials are taken from `yontrack.token` and `oauth.authPassword` in `values.yaml` and written into a Kubernetes Secret by the chart:
+
+```bash
+helm install yontrack-mcp \
+  oci://registry-1.docker.io/nemerosa/yontrack-mcp-chart \
+  --version <version> \
+  --set yontrack.url=https://your-ontrack-instance \
+  --set yontrack.token=your-api-token
+```
+
+#### Existing Secret
+
+Point the chart to a pre-created Secret (e.g. created by Sealed Secrets or manually). The Secret must contain:
 
 - `YONTRACK_TOKEN`
 - `YONTRACK_MCP_AUTH_PASSWORD` (when OAuth2 is enabled)
@@ -139,6 +163,28 @@ helm install yontrack-mcp \
   --set yontrack.url=https://your-ontrack-instance \
   --set existingSecret=my-yontrack-secret
 ```
+
+#### External Secrets Operator (ESO)
+
+When [ESO](https://external-secrets.io) is installed in the cluster, the chart can render an `ExternalSecret` CRD that instructs ESO to fetch credentials from an external backend (e.g. HashiCorp Vault, AWS Secrets Manager) and write them into a Kubernetes Secret automatically.
+
+```yaml
+externalSecrets:
+  enabled: true
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: vault-store        # name of your SecretStore / ClusterSecretStore
+    kind: SecretStore        # or ClusterSecretStore
+  data:
+    yontrackToken:
+      key: secret/yontrack   # path in the backend
+      property: token        # sub-field (omit if the whole entry is the value)
+    authPassword:            # only needed when OAuth2 is enabled
+      key: secret/yontrack
+      property: authPassword
+```
+
+The `ExternalSecret` targets the same Secret name the chart would otherwise create, so the Deployment references it transparently.
 
 ### Ingress example
 

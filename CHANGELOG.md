@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/yontrack/yontrack-mcp/compare/v1.8.0...v1.9.0) (2026-04-18)
+
+
+### Features
+
+* add External Secrets Operator (ESO) integration to chart ([b65a26d](https://github.com/yontrack/yontrack-mcp/commit/b65a26d90cfd7dc9472943d0d14d84a00d26b2fc))
+
 # [1.8.0](https://github.com/yontrack/yontrack-mcp/compare/v1.7.0...v1.8.0) (2026-04-03)
 
 

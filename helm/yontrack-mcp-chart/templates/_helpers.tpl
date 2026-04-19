@@ -31,11 +31,15 @@ Create chart label.
 
 {{/*
 Common labels.
+helm.sh/chart and app.kubernetes.io/version are included by default but can be
+suppressed by setting helmLabels: false (useful with ArgoCD rendered-manifest mode).
 */}}
 {{- define "yontrack-mcp-chart.labels" -}}
+{{- if ne .Values.helmLabels false }}
 helm.sh/chart: {{ include "yontrack-mcp-chart.chart" . }}
+{{- end }}
 {{ include "yontrack-mcp-chart.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
+{{- if and (ne .Values.helmLabels false) .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}

@@ -1,3 +1,8 @@
+# Include helm.sh/chart and app.kubernetes.io/version labels on all resources.
+# Set to false when using the rendered-manifest pattern (e.g. ArgoCD) to avoid
+# noisy diffs on every chart upgrade.
+helmLabels: true
+
 replicaCount: 1
 
 image:

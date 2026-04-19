@@ -1,3 +1,11 @@
+## [1.10.2](https://github.com/yontrack/yontrack-mcp/compare/v1.10.1...v1.10.2) (2026-04-19)
+
+
+### Bug Fixes
+
+* add instructions to fetch and render promotion level images ([a7c8969](https://github.com/yontrack/yontrack-mcp/commit/a7c8969257c726da6386bb6bb07c65784c0b25ab))
+* clarify rendering of promotion level images with data URIs ([a84e636](https://github.com/yontrack/yontrack-mcp/commit/a84e6368eaa1d8242b13dd134d8ce4397b392d9a))
+
 ## [1.10.1](https://github.com/yontrack/yontrack-mcp/compare/v1.10.0...v1.10.1) (2026-04-19)
 
 

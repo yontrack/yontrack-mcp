@@ -1,3 +1,10 @@
+## [1.10.1](https://github.com/yontrack/yontrack-mcp/compare/v1.10.0...v1.10.1) (2026-04-19)
+
+
+### Bug Fixes
+
+* add helmLabels toggle to control inclusion of chart and version labels ([e35e187](https://github.com/yontrack/yontrack-mcp/commit/e35e1877a57a6e43b710fc25e6a0a5e7ff2fdf6a))
+
 # [1.10.0](https://github.com/yontrack/yontrack-mcp/compare/v1.9.1...v1.10.0) (2026-04-19)
 
 

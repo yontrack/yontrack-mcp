@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/yontrack/yontrack-mcp/compare/v1.9.1...v1.10.0) (2026-04-19)
+
+
+### Features
+
+* add tool to fetch promotion level images via API ([38c0875](https://github.com/yontrack/yontrack-mcp/commit/38c0875443e1ecf6b07ef5b4941748d4c6727ec4))
+
 ## [1.9.1](https://github.com/yontrack/yontrack-mcp/compare/v1.9.0...v1.9.1) (2026-04-18)
 
 

@@ -10,11 +10,20 @@ vi.mock("../utils.js", () => ({
   resolveBranchId: vi.fn().mockResolvedValue(42),
 }));
 
+vi.mock("../config.js", () => ({
+  config: { YONTRACK_URL: "https://yontrack.example.com", YONTRACK_TOKEN: "test-token" },
+  mutationsEnabled: false,
+  oauthConfig: null,
+}));
+
 const { gqlClient } = await import("../client.js");
 const mockRequest = gqlClient.request as ReturnType<typeof vi.fn>;
+const mockFetch = vi.fn();
+vi.stubGlobal("fetch", mockFetch);
 
 beforeEach(() => {
   mockRequest.mockReset();
+  mockFetch.mockReset();
 });
 
 describe("list_promotion_levels", () => {
@@ -46,6 +55,48 @@ describe("list_promotion_levels", () => {
 
     const text = (result.content as { type: string; text: string }[])[0].text;
     expect(JSON.parse(text)).toEqual([]);
+  });
+});
+
+describe("get_promotion_level_image", () => {
+  it("returns base64-encoded PNG image when available", async () => {
+    const pngBytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47]); // PNG magic bytes
+    const expectedBase64 = Buffer.from(pngBytes).toString("base64");
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      arrayBuffer: () => Promise.resolve(pngBytes.buffer),
+    });
+
+    const client = await createTestClient(registerPromotionLevelTools);
+    const result = await client.callTool({
+      name: "get_promotion_level_image",
+      arguments: { promotionLevelId: 1 },
+    });
+
+    expect(result.isError).toBeFalsy();
+    const item = (result.content as { type: string; data: string; mimeType: string }[])[0];
+    expect(item.type).toBe("image");
+    expect(item.mimeType).toBe("image/png");
+    expect(item.data).toBe(expectedBase64);
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://yontrack.example.com/rest/structure/promotionLevels/1/image",
+      { headers: { "X-Ontrack-Token": "test-token" } }
+    );
+  });
+
+  it("returns error when image is not found", async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 404 });
+
+    const client = await createTestClient(registerPromotionLevelTools);
+    const result = await client.callTool({
+      name: "get_promotion_level_image",
+      arguments: { promotionLevelId: 99 },
+    });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as { type: string; text: string }[])[0].text;
+    expect(text).toContain("99");
+    expect(text).toContain("404");
   });
 });
 

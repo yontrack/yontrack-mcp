@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { gqlClient } from "../client.js";
+import { config } from "../config.js";
 import { resolveBranchId } from "../utils.js";
 
 const LIST_PROMOTION_LEVELS = `
@@ -10,6 +11,7 @@ const LIST_PROMOTION_LEVELS = `
         id
         name
         description
+        image
       }
     }
   }
@@ -48,6 +50,31 @@ export function registerPromotionLevelTools(server: McpServer, allowMutations: b
       const levels = data.branches?.[0]?.promotionLevels ?? [];
       return {
         content: [{ type: "text", text: JSON.stringify(levels, null, 2) }],
+      };
+    }
+  );
+
+  server.tool(
+    "get_promotion_level_image",
+    "Fetch the PNG image for a promotion level. Returns an image if the promotion level has one, or an error text if it does not.",
+    {
+      promotionLevelId: z.number().int().describe("Numeric ID of the promotion level"),
+    },
+    async ({ promotionLevelId }) => {
+      const url = `${config.YONTRACK_URL}/rest/structure/promotionLevels/${promotionLevelId}/image`;
+      const response = await fetch(url, {
+        headers: { "X-Ontrack-Token": config.YONTRACK_TOKEN },
+      });
+      if (!response.ok) {
+        return {
+          isError: true,
+          content: [{ type: "text", text: `No image available for promotion level ${promotionLevelId} (HTTP ${response.status})` }],
+        };
+      }
+      const buffer = await response.arrayBuffer();
+      const base64 = Buffer.from(buffer).toString("base64");
+      return {
+        content: [{ type: "image", data: base64, mimeType: "image/png" }],
       };
     }
   );

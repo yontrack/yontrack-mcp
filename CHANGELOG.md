@@ -1,3 +1,10 @@
+## [1.11.2](https://github.com/yontrack/yontrack-mcp/compare/v1.11.1...v1.11.2) (2026-05-03)
+
+
+### Bug Fixes
+
+* trigger initial npm publish ([295a61b](https://github.com/yontrack/yontrack-mcp/commit/295a61bed2b99f7edd0e0a5e422be6288647e5fd))
+
 ## [1.11.1](https://github.com/yontrack/yontrack-mcp/compare/v1.11.0...v1.11.1) (2026-05-03)
 
 

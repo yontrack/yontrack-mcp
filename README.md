@@ -1,90 +1,115 @@
 # yontrack-mcp
 
-MCP server for [Yontrack](https://ontrack.nemerosa.net) (Ontrack CI/CD monitoring platform). Exposes Yontrack's GraphQL API as MCP tools for use with Claude and other MCP clients.
+MCP server for [Yontrack](https://ontrack.nemerosa.net) (Ontrack CI/CD monitoring platform). It exposes Yontrack's GraphQL API as MCP tools so that AI assistants such as Claude can query and manage your CI/CD pipelines through natural language.
 
-## Prerequisites
+The server uses the [Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http) (`POST /mcp`) and is available as a pre-built Docker image.
 
-- Node.js
-- A running Yontrack instance and an API token
+## Features
 
-## Setup
+- **Read-only by default** — only query tools are active unless mutations are explicitly enabled
+- **Mutation tools** — create projects, branches, builds, validation stamps/runs, promotion levels/runs, and build links (opt-in via `YONTRACK_MUTATIONS_ENABLED=true`)
+- **Raw GraphQL access** — `graphql_query` tool for queries not covered by the dedicated tools
+- **OAuth2 support** — required for claude.ai; enabled by setting two environment variables
+- **Docker image** — published to Docker Hub on every release (`nemerosa/yontrack-mcp:latest`)
+- **Helm chart** — OCI chart for Kubernetes deployments with full secret management support
 
-```bash
-npm install
-npm run build
-```
+## Available Tools
 
-Set the required environment variables:
+By default only read-only tools are available. Set `YONTRACK_MUTATIONS_ENABLED=true` to also expose the tools marked with ✎ below.
 
-```bash
-export YONTRACK_URL=https://your-ontrack-instance
-export YONTRACK_TOKEN=your-api-token
-```
+| Category | Read-only tools | Mutation tools (✎) |
+|---|---|---|
+| Projects | `list_projects` | `create_project` |
+| Branches | `list_branches` | `create_branch` |
+| Builds | `list_builds`, `find_build`, `get_build_duration` | `create_build` |
+| Validation stamps | `list_validation_stamps` | `create_validation_stamp` |
+| Validation runs | `get_validation_runs` | `create_validation_run` |
+| Promotion levels | `list_promotion_levels`, `get_promotion_level_image` | `create_promotion_level` |
+| Promotion runs | `get_promotion_runs` | `promote_build` |
+| Build links | `get_build_links` | `set_build_links` |
+| Search | `search` | — |
+| GraphQL | `graphql_query` ✝ | — |
 
-See [Environment Variables](#environment-variables) for the full list of supported variables.
+> ✝ `graphql_query` is always registered but rejects requests whose query string starts with `mutation` when `YONTRACK_MUTATIONS_ENABLED` is not set.
 
-## Testing
+## Installation
 
-### Unit tests
+### Cursor
 
-Tests use [Vitest](https://vitest.dev/) with a mocked GraphQL client. No running Yontrack instance is required.
-
-```bash
-npm test           # single run
-npm run test:watch # watch mode
-```
-
-Tests live alongside the source files as `*.test.ts`. The helper in `src/test/helpers.ts` wires an in-process MCP client+server pair via `InMemoryTransport`, so tests exercise the full MCP protocol path without any network I/O.
-
-### Interactive testing with MCP Inspector
-
-The [MCP Inspector](https://github.com/modelcontextprotocol/inspector) provides a browser UI to browse and call tools against a real Yontrack instance:
+Start the server with Docker (listens on port 3000 by default):
 
 ```bash
-YONTRACK_URL=https://your-ontrack-instance YONTRACK_TOKEN=your-token \
-  npx @modelcontextprotocol/inspector node build/index.js
-```
-
-## Docker
-
-A pre-built image is published to Docker Hub on every push to `main`:
-
-```
-nemerosa/yontrack-mcp:latest
-```
-
-To build locally:
-
-```bash
-docker build -t yontrack-mcp .
-```
-
-Run the container (listens on port 3000 by default):
-
-```bash
-docker run --rm \
+docker run -d --name yontrack-mcp \
   -e YONTRACK_URL=https://your-ontrack-instance \
   -e YONTRACK_TOKEN=your-api-token \
-  -e YONTRACK_MUTATIONS_ENABLED=true \
   -p 3000:3000 \
   nemerosa/yontrack-mcp:latest
 ```
 
-Omit `YONTRACK_MUTATIONS_ENABLED` (or set it to `false`) to run in read-only mode.
+Add the MCP server to your Cursor configuration. Create or edit `.cursor/mcp.json` in your project (or `~/.cursor/mcp.json` for a global configuration):
 
-To enable OAuth2 (required for claude.ai), add the two OAuth variables:
+```json
+{
+  "mcpServers": {
+    "yontrack": {
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
+### VSCode and IntelliJ
+
+Start the server with Docker:
 
 ```bash
-docker run --rm \
+docker run -d --name yontrack-mcp \
   -e YONTRACK_URL=https://your-ontrack-instance \
   -e YONTRACK_TOKEN=your-api-token \
-  -e YONTRACK_MCP_SERVER_URL=https://mcp.example.com \
-  -e YONTRACK_MCP_AUTH_PASSWORD=some-strong-password \
   -p 3000:3000 \
   nemerosa/yontrack-mcp:latest
 ```
 
-## Kubernetes / Helm
+**VSCode** — create or edit `.vscode/mcp.json` in your project:
+
+```json
+{
+  "servers": {
+    "yontrack": {
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
+**IntelliJ IDEA** — open **Settings → Tools → AI Assistant → Model Context Protocol (MCP)**, click **+**, choose **HTTP**, and enter `http://localhost:3000/mcp` as the server URL.
+
+### Claude Desktop
+
+Start the server with Docker:
+
+```bash
+docker run -d --name yontrack-mcp \
+  -e YONTRACK_URL=https://your-ontrack-instance \
+  -e YONTRACK_TOKEN=your-api-token \
+  -p 3000:3000 \
+  nemerosa/yontrack-mcp:latest
+```
+
+Add the server to your Claude Desktop configuration file (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "yontrack": {
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
+### Helm
 
 A Helm chart is published to Docker Hub as an OCI image alongside every release:
 
@@ -92,7 +117,7 @@ A Helm chart is published to Docker Hub as an OCI image alongside every release:
 oci://registry-1.docker.io/nemerosa/yontrack-mcp-chart
 ```
 
-### Install
+#### Install
 
 ```bash
 helm install yontrack-mcp \
@@ -102,7 +127,7 @@ helm install yontrack-mcp \
   --set yontrack.token=your-api-token
 ```
 
-### Configuration
+#### Configuration
 
 | Value | Description | Default |
 |---|---|---|
@@ -133,11 +158,11 @@ helm install yontrack-mcp \
 | `image.tag` | Image tag override (defaults to chart `appVersion`) | `""` |
 | `resources` | Pod resource requests/limits | `{}` |
 
-### Secret management
+#### Secret management
 
 The chart supports three mutually exclusive modes for injecting credentials. `existingSecret` takes precedence over `externalSecrets.enabled`; if neither is set the chart creates the Secret itself.
 
-#### Chart-managed Secret (default)
+**Chart-managed Secret (default)**
 
 Credentials are taken from `yontrack.token` and `oauth.authPassword` in `values.yaml` and written into a Kubernetes Secret by the chart:
 
@@ -149,7 +174,7 @@ helm install yontrack-mcp \
   --set yontrack.token=your-api-token
 ```
 
-#### Existing Secret
+**Existing Secret**
 
 Point the chart to a pre-created Secret (e.g. created by Sealed Secrets or manually). The Secret must contain:
 
@@ -164,7 +189,7 @@ helm install yontrack-mcp \
   --set existingSecret=my-yontrack-secret
 ```
 
-#### External Secrets Operator (ESO)
+**External Secrets Operator (ESO)**
 
 When [ESO](https://external-secrets.io) is installed in the cluster, the chart can render an `ExternalSecret` CRD that instructs ESO to fetch credentials from an external backend (e.g. HashiCorp Vault, AWS Secrets Manager) and write them into a Kubernetes Secret automatically.
 
@@ -186,7 +211,7 @@ externalSecrets:
 
 The `ExternalSecret` targets the same Secret name the chart would otherwise create, so the Deployment references it transparently.
 
-### Ingress example
+#### Ingress example
 
 **Without OAuth2** — expose only the `/mcp` endpoint:
 
@@ -228,34 +253,21 @@ ingress:
 
 The MCP endpoint is available at `https://mcp.example.com/mcp`.
 
-## Usage with Claude Desktop / Claude.ai
+### Claude AI
 
-The server exposes a Streamable HTTP transport (MCP spec 2025-03-26) on `POST /mcp`.
-
-### Local / Claude Desktop (no auth)
-
-Start the server locally:
+Claude.ai requires OAuth2 for remote MCP servers. Start the server with the two additional OAuth environment variables:
 
 ```bash
-YONTRACK_URL=https://your-ontrack-instance YONTRACK_TOKEN=your-api-token npm start
-# or with a custom port:
-PORT=8080 YONTRACK_URL=... YONTRACK_TOKEN=... npm start
+docker run -d --name yontrack-mcp \
+  -e YONTRACK_URL=https://your-ontrack-instance \
+  -e YONTRACK_TOKEN=your-api-token \
+  -e YONTRACK_MCP_SERVER_URL=https://mcp.example.com \
+  -e YONTRACK_MCP_AUTH_PASSWORD=some-strong-password \
+  -p 3000:3000 \
+  nemerosa/yontrack-mcp:latest
 ```
 
-Register it in your MCP client as a remote server at `http://localhost:3000/mcp`.
-
-Add `YONTRACK_MUTATIONS_ENABLED=true` to also expose the mutation tools.
-
-### Claude.ai (OAuth2 required)
-
-Claude.ai requires OAuth2 for remote MCP servers. To enable it, set two additional environment variables alongside the standard ones:
-
-```bash
-export YONTRACK_MCP_SERVER_URL=https://mcp.example.com   # public HTTPS URL of this server
-export YONTRACK_MCP_AUTH_PASSWORD=some-strong-password   # users enter this in the browser
-```
-
-Both must be set together; either alone is ignored and the server starts without authentication.
+Both `YONTRACK_MCP_SERVER_URL` and `YONTRACK_MCP_AUTH_PASSWORD` must be set together; either alone is ignored and the server starts without authentication.
 
 **First-time connection flow:**
 
@@ -270,7 +282,23 @@ Both must be set together; either alone is ignored and the server starts without
 
 > **Tokens are in-memory.** All issued tokens are lost when the server restarts. Users will be prompted to re-authorize after a restart.
 
-## Environment Variables
+## Configuration
+
+### Read-only mode
+
+By default the server runs in read-only mode: only query tools are registered and no data can be modified. This is the recommended mode when the AI assistant only needs to inspect CI/CD state.
+
+To also expose the mutation tools (create projects, branches, builds, validation stamps/runs, promotion levels/runs, and build links), set:
+
+```bash
+YONTRACK_MUTATIONS_ENABLED=true
+```
+
+### Yontrack API token
+
+An API token is required to authenticate against Yontrack. To generate one, log in to your Yontrack instance, open your user menu, and go to **User tokens**. Create a new token and copy it — it will not be shown again.
+
+### Environment variables
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
@@ -282,21 +310,6 @@ Both must be set together; either alone is ignored and the server starts without
 | `YONTRACK_MCP_CLIENTS_FILE` | No | `./yontrack-mcp-clients.json` | File path where registered OAuth2 clients are persisted so they survive restarts. The Helm chart sets this automatically to `/data/clients.json` when `persistence.enabled` is true. |
 | `PORT` | No | `3000` | Port the HTTP server listens on |
 
-## Available Tools
+## Contributing
 
-By default only read-only tools are available. Set `YONTRACK_MUTATIONS_ENABLED=true` to also expose the tools marked with ✎ below.
-
-| Category | Read-only tools | Mutation tools (✎) |
-|---|---|---|
-| Projects | `list_projects` | `create_project` |
-| Branches | `list_branches` | `create_branch` |
-| Builds | `list_builds`, `find_build`, `get_build_duration` | `create_build` |
-| Validation stamps | `list_validation_stamps` | `create_validation_stamp` |
-| Validation runs | `get_validation_runs` | `create_validation_run` |
-| Promotion levels | `list_promotion_levels` | `create_promotion_level` |
-| Promotion runs | `get_promotion_runs` | `promote_build` |
-| Build links | `get_build_links` | `set_build_links` |
-| Search | `search` | — |
-| GraphQL | `graphql_query` ✝ | — |
-
-> ✝ `graphql_query` is always registered but rejects requests whose query string starts with `mutation` when `YONTRACK_MUTATIONS_ENABLED` is not set.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, running tests, and interactive testing with MCP Inspector.

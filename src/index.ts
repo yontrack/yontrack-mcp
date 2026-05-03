@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import express from "express";
 import type { Request, Response } from "express";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -12,6 +13,12 @@ import {
   generateAuthCode,
   renderAuthFormHtml,
 } from "./auth.js";
+
+if (process.argv[2] === "stdio") {
+  const server = createServer();
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+} else {
 
 const port = parseInt(process.env.PORT ?? "3000", 10);
 const app = express();
@@ -165,3 +172,4 @@ app.listen(port, () => {
     );
   }
 });
+}

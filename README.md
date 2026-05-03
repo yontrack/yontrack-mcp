@@ -36,39 +36,26 @@ By default only read-only tools are available. Set `YONTRACK_MUTATIONS_ENABLED=t
 
 ### Cursor
 
-Start the server with Docker (listens on port 3000 by default):
-
-```bash
-docker run -d --name yontrack-mcp \
-  -e YONTRACK_URL=https://your-ontrack-instance \
-  -e YONTRACK_TOKEN=your-api-token \
-  -p 3000:3000 \
-  nemerosa/yontrack-mcp:latest
-```
-
-Add the MCP server to your Cursor configuration. Create or edit `.cursor/mcp.json` in your project (or `~/.cursor/mcp.json` for a global configuration):
+Create or edit `.cursor/mcp.json` in your project (or `~/.cursor/mcp.json` for a global configuration):
 
 ```json
 {
   "mcpServers": {
     "yontrack": {
-      "url": "http://localhost:3000/mcp"
+      "command": "npx",
+      "args": ["-y", "yontrack-mcp@latest", "stdio"],
+      "env": {
+        "YONTRACK_URL": "https://your-ontrack-instance",
+        "YONTRACK_TOKEN": "your-api-token"
+      }
     }
   }
 }
 ```
 
+Cursor will start the server automatically as a subprocess when needed.
+
 ### VSCode and IntelliJ
-
-Start the server with Docker:
-
-```bash
-docker run -d --name yontrack-mcp \
-  -e YONTRACK_URL=https://your-ontrack-instance \
-  -e YONTRACK_TOKEN=your-api-token \
-  -p 3000:3000 \
-  nemerosa/yontrack-mcp:latest
-```
 
 **VSCode** — create or edit `.vscode/mcp.json` in your project:
 
@@ -76,26 +63,24 @@ docker run -d --name yontrack-mcp \
 {
   "servers": {
     "yontrack": {
-      "type": "http",
-      "url": "http://localhost:3000/mcp"
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "yontrack-mcp@latest", "stdio"],
+      "env": {
+        "YONTRACK_URL": "https://your-ontrack-instance",
+        "YONTRACK_TOKEN": "your-api-token"
+      }
     }
   }
 }
 ```
 
-**IntelliJ IDEA** — open **Settings → Tools → AI Assistant → Model Context Protocol (MCP)**, click **+**, choose **HTTP**, and enter `http://localhost:3000/mcp` as the server URL.
+**IntelliJ IDEA** — open **Settings → Tools → AI Assistant → Model Context Protocol (MCP)**, click **+**, and configure:
+- Command: `npx`
+- Arguments: `-y yontrack-mcp@latest stdio`
+- Environment: `YONTRACK_URL=https://your-ontrack-instance`, `YONTRACK_TOKEN=your-api-token`
 
 ### Claude Desktop
-
-Start the server with Docker:
-
-```bash
-docker run -d --name yontrack-mcp \
-  -e YONTRACK_URL=https://your-ontrack-instance \
-  -e YONTRACK_TOKEN=your-api-token \
-  -p 3000:3000 \
-  nemerosa/yontrack-mcp:latest
-```
 
 Add the server to your Claude Desktop configuration file (`claude_desktop_config.json`):
 
@@ -103,7 +88,12 @@ Add the server to your Claude Desktop configuration file (`claude_desktop_config
 {
   "mcpServers": {
     "yontrack": {
-      "url": "http://localhost:3000/mcp"
+      "command": "npx",
+      "args": ["-y", "yontrack-mcp@latest", "stdio"],
+      "env": {
+        "YONTRACK_URL": "https://your-ontrack-instance",
+        "YONTRACK_TOKEN": "your-api-token"
+      }
     }
   }
 }

@@ -114,6 +114,7 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
       - run: npm ci
+      - run: npm version ${{ needs.release.outputs.new_release_version }} --no-git-tag-version
       - run: npm run build
       - run: npm publish --access public
         env:

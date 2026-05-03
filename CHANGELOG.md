@@ -1,3 +1,10 @@
+## [1.11.3](https://github.com/yontrack/yontrack-mcp/compare/v1.11.2...v1.11.3) (2026-05-03)
+
+
+### Bug Fixes
+
+* update README with corrected Yontrack URL and improved environment variables table formatting ([d4b7372](https://github.com/yontrack/yontrack-mcp/commit/d4b7372244fe78b28d279fb38bd27631170dfea1))
+
 ## [1.11.2](https://github.com/yontrack/yontrack-mcp/compare/v1.11.1...v1.11.2) (2026-05-03)
 
 

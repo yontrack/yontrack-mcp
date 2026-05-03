@@ -41,3 +41,33 @@ The [MCP Inspector](https://github.com/modelcontextprotocol/inspector) provides 
 YONTRACK_URL=https://your-ontrack-instance YONTRACK_TOKEN=your-token \
   npx @modelcontextprotocol/inspector node build/index.js
 ```
+
+## CI secrets setup
+
+The release workflow requires three repository secrets. Add them under **Settings → Secrets and variables → Actions → New repository secret** in the GitHub repository.
+
+### NPM_TOKEN
+
+Required by the `npm-publish` job to publish the package to npmjs.com.
+
+1. Log in to [npmjs.com](https://www.npmjs.com)
+2. Click your avatar → **Access Tokens** → **Generate New Token** → **Granular Access Token**
+3. Fill in the form:
+   - **Token name**: e.g. `yontrack-mcp CI`
+   - **Expiration**: choose a duration appropriate for your CI setup (e.g. 1 year)
+   - **Packages and scopes**: set to **Read and write**
+     - For the **first publish** (package does not exist on npm yet): choose **All packages**
+     - After the package exists: rotate the token and choose **Only select packages and scopes** → `yontrack-mcp`
+4. Click **Generate token** and copy it (shown only once)
+5. Add it as a repository secret named `NPM_TOKEN`
+
+### DOCKERHUB_USERNAME and DOCKERHUB_TOKEN
+
+Required by the `docker` job to push images to Docker Hub.
+
+1. Log in to [hub.docker.com](https://hub.docker.com)
+2. Click your avatar → **My Account** → **Security** → **New Access Token**
+3. Give it read/write access and copy the token
+4. Add two repository secrets:
+   - `DOCKERHUB_USERNAME` — your Docker Hub username
+   - `DOCKERHUB_TOKEN` — the access token

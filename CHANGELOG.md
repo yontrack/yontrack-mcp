@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/yontrack/yontrack-mcp/compare/v1.12.4...v1.13.0) (2026-05-03)
+
+
+### Features
+
+* add search tools for commits and issues using typed GraphQL queries ([4be2b81](https://github.com/yontrack/yontrack-mcp/commit/4be2b8129336bea5e0b8742dacc45c4fdb12f831))
+
 ## [1.12.4](https://github.com/yontrack/yontrack-mcp/compare/v1.12.3...v1.12.4) (2026-05-03)
 
 

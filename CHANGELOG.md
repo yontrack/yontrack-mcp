@@ -1,3 +1,10 @@
+## [1.12.3](https://github.com/yontrack/yontrack-mcp/compare/v1.12.2...v1.12.3) (2026-05-03)
+
+
+### Bug Fixes
+
+* remove separate Yontrack workflow and consolidate into CI workflow ([e1b1acf](https://github.com/yontrack/yontrack-mcp/commit/e1b1acfd7b6d228380db41da964c81680f7f604a))
+
 ## [1.12.2](https://github.com/yontrack/yontrack-mcp/compare/v1.12.1...v1.12.2) (2026-05-03)
 
 

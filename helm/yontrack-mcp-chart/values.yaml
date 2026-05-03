@@ -5,6 +5,11 @@ helmLabels: true
 
 replicaCount: 1
 
+# Update strategy for the Deployment.
+# Use Recreate when persistence is enabled (RWO PVC) to avoid Multi-Attach errors during upgrades.
+# RollingUpdate requires ReadWriteMany storage or a single-node cluster.
+updateStrategy: Recreate
+
 image:
   repository: nemerosa/yontrack-mcp
   pullPolicy: IfNotPresent

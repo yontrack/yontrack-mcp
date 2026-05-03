@@ -1,3 +1,10 @@
+## [1.12.1](https://github.com/yontrack/yontrack-mcp/compare/v1.12.0...v1.12.1) (2026-05-03)
+
+
+### Bug Fixes
+
+* **helm:** handle rollingUpdate field for Recreate updateStrategy ([ef10927](https://github.com/yontrack/yontrack-mcp/commit/ef109278bed60b807c509264accadcc267bc5575))
+
 # [1.12.0](https://github.com/yontrack/yontrack-mcp/compare/v1.11.4...v1.12.0) (2026-05-03)
 
 

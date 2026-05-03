@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/yontrack/yontrack-mcp/compare/v1.11.0...v1.11.1) (2026-05-03)
+
+
+### Bug Fixes
+
+* update CONTRIBUTING.md with CI secrets setup instructions ([b78c447](https://github.com/yontrack/yontrack-mcp/commit/b78c447bdb22a4ff64b96ec6cc66ae76914257e6))
+
 # [1.11.0](https://github.com/yontrack/yontrack-mcp/compare/v1.10.2...v1.11.0) (2026-05-03)
 
 

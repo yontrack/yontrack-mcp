@@ -127,10 +127,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - run: gh release edit v${{ needs.release.outputs.new_release_version }} --draft=false --repo ${{ github.repository }}
-        id: publish
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/checkout@v6
 
       - name: "Yontrack configuration"
         id: yontrack-config
@@ -140,6 +138,11 @@ jobs:
           YONTRACK_TOKEN: ${{ secrets.YONTRACK_TOKEN }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - run: gh release edit v${{ needs.release.outputs.new_release_version }} --draft=false --repo ${{ github.repository }}
+        id: publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Yontrack release
         if: ${{ steps.publish.outcome != '' && steps.publish.outcome != 'skipped' }}

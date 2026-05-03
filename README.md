@@ -286,7 +286,7 @@ YONTRACK_MUTATIONS_ENABLED=true
 
 ### Yontrack API token
 
-An API token is required to authenticate against Yontrack. To generate one, log in to your Yontrack instance, open your user menu, and go to **User tokens**. Create a new token and copy it — it will not be shown again.
+An API token is required to authenticate against Yontrack. To generate one, log in to your Yontrack instance, open your user menu, and go to **User information > User profile**. Create a new token and copy it — it will not be shown again.
 
 ### Environment variables
 

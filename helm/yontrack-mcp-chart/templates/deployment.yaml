@@ -8,6 +8,9 @@ spec:
   replicas: {{ .Values.replicaCount }}
   strategy:
     type: {{ .Values.updateStrategy }}
+    {{- if eq .Values.updateStrategy "Recreate" }}
+    rollingUpdate: null
+    {{- end }}
   selector:
     matchLabels:
       {{- include "yontrack-mcp-chart.selectorLabels" . | nindent 6 }}

@@ -1,3 +1,10 @@
+## [1.11.4](https://github.com/yontrack/yontrack-mcp/compare/v1.11.3...v1.11.4) (2026-05-03)
+
+
+### Bug Fixes
+
+* add npm versioning step to release workflow ([1d87680](https://github.com/yontrack/yontrack-mcp/commit/1d876803d6abf6b7afa4c94fb4e7a7f45fd1c79a))
+
 ## [1.11.3](https://github.com/yontrack/yontrack-mcp/compare/v1.11.2...v1.11.3) (2026-05-03)
 
 

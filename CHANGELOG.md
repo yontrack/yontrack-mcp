@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/yontrack/yontrack-mcp/compare/v1.11.4...v1.12.0) (2026-05-03)
+
+
+### Features
+
+* **helm:** add configurable updateStrategy to deployment template ([3fc2df5](https://github.com/yontrack/yontrack-mcp/commit/3fc2df52f3cee17fe6031070d5f0f07ceb88b105))
+
 ## [1.11.4](https://github.com/yontrack/yontrack-mcp/compare/v1.11.3...v1.11.4) (2026-05-03)
 
 

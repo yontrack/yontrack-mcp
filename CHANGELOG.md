@@ -1,3 +1,10 @@
+## [1.12.2](https://github.com/yontrack/yontrack-mcp/compare/v1.12.1...v1.12.2) (2026-05-03)
+
+
+### Bug Fixes
+
+* trigger release ([fabd150](https://github.com/yontrack/yontrack-mcp/commit/fabd15040a59cfec48be6a9fa4dd827b9ba45042))
+
 ## [1.12.1](https://github.com/yontrack/yontrack-mcp/compare/v1.12.0...v1.12.1) (2026-05-03)
 
 

@@ -132,6 +132,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: "Yontrack configuration"
+        id: yontrack-config
+        uses: nemerosa/ontrack-github-actions-cli-config@v1.3.0
+        env:
+          YONTRACK_URL: ${{ vars.YONTRACK_URL }}
+          YONTRACK_TOKEN: ${{ secrets.YONTRACK_TOKEN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Yontrack release
         if: ${{ steps.publish.outcome != '' && steps.publish.outcome != 'skipped' }}
         run: |

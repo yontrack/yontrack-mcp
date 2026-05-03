@@ -1,6 +1,6 @@
 # yontrack-mcp
 
-MCP server for [Yontrack](https://ontrack.nemerosa.net) (Ontrack CI/CD monitoring platform). It exposes Yontrack's GraphQL API as MCP tools so that AI assistants such as Claude can query and manage your CI/CD pipelines through natural language.
+MCP server for [Yontrack](https://yontrack.com) (Ontrack CI/CD monitoring platform). It exposes Yontrack's GraphQL API as MCP tools so that AI assistants such as Claude can query and manage your CI/CD pipelines through natural language.
 
 The server uses the [Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http) (`POST /mcp`) and is available as a pre-built Docker image.
 
@@ -290,15 +290,15 @@ An API token is required to authenticate against Yontrack. To generate one, log 
 
 ### Environment variables
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `YONTRACK_URL` | Yes | — | URL of the Yontrack instance (e.g. `https://ontrack.example.com`) |
-| `YONTRACK_TOKEN` | Yes | — | API token for authenticating against Yontrack |
-| `YONTRACK_MUTATIONS_ENABLED` | No | `false` | Set to `true` to enable mutation tools (create/promote/link operations). When unset or `false`, only read-only query tools are registered. |
-| `YONTRACK_MCP_SERVER_URL` | No | — | Public HTTPS URL of this server. When set together with `YONTRACK_MCP_AUTH_PASSWORD`, enables OAuth2 (required for claude.ai). |
-| `YONTRACK_MCP_AUTH_PASSWORD` | No | — | Password users must enter in the browser authorization form. Required together with `YONTRACK_MCP_SERVER_URL` to enable OAuth2. |
-| `YONTRACK_MCP_CLIENTS_FILE` | No | `./yontrack-mcp-clients.json` | File path where registered OAuth2 clients are persisted so they survive restarts. The Helm chart sets this automatically to `/data/clients.json` when `persistence.enabled` is true. |
-| `PORT` | No | `3000` | Port the HTTP server listens on |
+| Variable                     | Required | Default                       | Description                                                                                                                                                                          |
+|------------------------------|----------|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `YONTRACK_URL`               | Yes      | —                             | URL of the Yontrack instance (e.g. `https://yontrack.example.com`)                                                                                                                   |
+| `YONTRACK_TOKEN`             | Yes      | —                             | API token for authenticating against Yontrack                                                                                                                                        |
+| `YONTRACK_MUTATIONS_ENABLED` | No       | `false`                       | Set to `true` to enable mutation tools (create/promote/link operations). When unset or `false`, only read-only query tools are registered.                                           |
+| `YONTRACK_MCP_SERVER_URL`    | No       | —                             | Public HTTPS URL of this server. When set together with `YONTRACK_MCP_AUTH_PASSWORD`, enables OAuth2 (required for claude.ai).                                                       |
+| `YONTRACK_MCP_AUTH_PASSWORD` | No       | —                             | Password users must enter in the browser authorization form. Required together with `YONTRACK_MCP_SERVER_URL` to enable OAuth2.                                                      |
+| `YONTRACK_MCP_CLIENTS_FILE`  | No       | `./yontrack-mcp-clients.json` | File path where registered OAuth2 clients are persisted so they survive restarts. The Helm chart sets this automatically to `/data/clients.json` when `persistence.enabled` is true. |
+| `PORT`                       | No       | `3000`                        | Port the HTTP server listens on                                                                                                                                                      |
 
 ## Contributing
 

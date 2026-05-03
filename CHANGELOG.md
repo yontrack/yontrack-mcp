@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/yontrack/yontrack-mcp/compare/v1.10.2...v1.11.0) (2026-05-03)
+
+
+### Features
+
+* switch to stdio transport for MCP server and add npm publishing workflow ([04bbcf0](https://github.com/yontrack/yontrack-mcp/commit/04bbcf0bf29f7c94c60055a4fa651944f78609cd))
+
 ## [1.10.2](https://github.com/yontrack/yontrack-mcp/compare/v1.10.1...v1.10.2) (2026-04-19)
 
 

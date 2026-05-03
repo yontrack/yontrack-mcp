@@ -1,3 +1,10 @@
+## [1.12.4](https://github.com/yontrack/yontrack-mcp/compare/v1.12.3...v1.12.4) (2026-05-03)
+
+
+### Bug Fixes
+
+* reorder steps in release workflow to fix execution dependencies ([092cb7b](https://github.com/yontrack/yontrack-mcp/commit/092cb7bcb1e8234343f3dacc96444ae60f285fb1))
+
 ## [1.12.3](https://github.com/yontrack/yontrack-mcp/compare/v1.12.2...v1.12.3) (2026-05-03)
 
 

@@ -17,10 +17,7 @@ const schemas: Record<string, GraphQLSchema> = {
 const V6_ONLY = new Set(["src/tools/agent-context.ts", "src/tools/agent-context-support.ts"]);
 
 // Known invalid documents, as "version file NAME": these must be fixed, then removed from here
-const KNOWN_INVALID = new Set([
-  // search(type:) is required on v5, but the `search` tool sends it only when given
-  "v5 src/tools/search.ts SEARCH",
-]);
+const KNOWN_INVALID = new Set<string>([]);
 
 const sourceFiles = [
   "src/capabilities.ts",

@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/yontrack/yontrack-mcp/compare/v1.13.0...v1.14.0) (2026-10-09)
+
+
+### Features
+
+* agent-context tools and agent session headers for Yontrack 6 ([8469d95](https://github.com/yontrack/yontrack-mcp/commit/8469d95ca5618f2a072a2ea9fa085871123a0033)), closes [#1](https://github.com/yontrack/yontrack-mcp/issues/1)
+
 # [1.13.0](https://github.com/yontrack/yontrack-mcp/compare/v1.12.4...v1.13.0) (2026-05-03)
 
 

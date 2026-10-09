@@ -50,7 +50,7 @@ describe("get_build_links", () => {
 
 describe("set_build_links", () => {
   it("returns success message when links are set", async () => {
-    mockRequest.mockResolvedValueOnce({ linksBuild: { userErrors: [] } });
+    mockRequest.mockResolvedValueOnce({ linksBuild: { errors: [] } });
 
     const client = await createTestClient(registerBuildLinkTools);
     const result = await client.callTool({
@@ -67,9 +67,9 @@ describe("set_build_links", () => {
     expect(text).toContain("updated successfully");
   });
 
-  it("returns an error when userErrors is non-empty", async () => {
+  it("returns an error when errors is non-empty", async () => {
     mockRequest.mockResolvedValueOnce({
-      linksBuild: { userErrors: [{ message: "Build not found" }] },
+      linksBuild: { errors: [{ message: "Build not found" }] },
     });
 
     const client = await createTestClient(registerBuildLinkTools);

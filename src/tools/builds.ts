@@ -55,7 +55,7 @@ const CREATE_BUILD = `
       description: $description
     }) {
       build { id name displayName description branch { id name displayName project { id name } } }
-      userErrors { message }
+      errors { message }
     }
   }
 `;
@@ -112,14 +112,14 @@ export function registerBuildTools(server: McpServer, allowMutations: boolean) {
     },
     async ({ project, branch, name, description }) => {
       const data = await gqlClient.request<{
-        createBuild: { build: unknown; userErrors: { message: string }[] };
+        createBuild: { build: unknown; errors: { message: string }[] };
       }>(CREATE_BUILD, { project, branch, name, description });
 
-      const { build, userErrors } = data.createBuild;
-      if (userErrors?.length) {
+      const { build, errors } = data.createBuild;
+      if (errors?.length) {
         return {
           isError: true,
-          content: [{ type: "text", text: userErrors.map((e) => e.message).join(", ") }],
+          content: [{ type: "text", text: errors.map((e) => e.message).join(", ") }],
         };
       }
       return {

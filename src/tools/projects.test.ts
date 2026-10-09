@@ -53,7 +53,7 @@ describe("list_projects", () => {
 describe("create_project", () => {
   it("returns the created project", async () => {
     const project = { id: 1, name: "newproject", description: "New", disabled: false };
-    mockRequest.mockResolvedValueOnce({ createProject: { project, userErrors: [] } });
+    mockRequest.mockResolvedValueOnce({ createProject: { project, errors: [] } });
 
     const client = await createTestClient(registerProjectTools);
     const result = await client.callTool({
@@ -66,9 +66,9 @@ describe("create_project", () => {
     expect(JSON.parse(text)).toEqual(project);
   });
 
-  it("returns an error when userErrors is non-empty", async () => {
+  it("returns an error when errors is non-empty", async () => {
     mockRequest.mockResolvedValueOnce({
-      createProject: { project: null, userErrors: [{ message: "Project already exists" }] },
+      createProject: { project: null, errors: [{ message: "Project already exists" }] },
     });
 
     const client = await createTestClient(registerProjectTools);

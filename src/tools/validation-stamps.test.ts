@@ -51,7 +51,7 @@ describe("list_validation_stamps", () => {
 describe("create_validation_stamp", () => {
   it("returns the created validation stamp", async () => {
     const stamp = { id: 5, name: "SECURITY", description: "Security scan" };
-    mockRequest.mockResolvedValueOnce({ createValidationStampById: { validationStamp: stamp, userErrors: [] } });
+    mockRequest.mockResolvedValueOnce({ createValidationStampById: { validationStamp: stamp, errors: [] } });
 
     const client = await createTestClient(registerValidationStampTools);
     const result = await client.callTool({
@@ -64,9 +64,9 @@ describe("create_validation_stamp", () => {
     expect(JSON.parse(text)).toEqual(stamp);
   });
 
-  it("returns an error when userErrors is non-empty", async () => {
+  it("returns an error when errors is non-empty", async () => {
     mockRequest.mockResolvedValueOnce({
-      createValidationStampById: { validationStamp: null, userErrors: [{ message: "Stamp already exists" }] },
+      createValidationStampById: { validationStamp: null, errors: [{ message: "Stamp already exists" }] },
     });
 
     const client = await createTestClient(registerValidationStampTools);

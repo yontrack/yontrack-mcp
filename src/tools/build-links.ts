@@ -34,7 +34,7 @@ const SET_BUILD_LINKS = `
       fromBuild: $fromBuild
       links: $links
     }) {
-      userErrors { message }
+      errors { message }
     }
   }
 `;
@@ -76,14 +76,14 @@ export function registerBuildLinkTools(server: McpServer, allowMutations: boolea
     },
     async ({ fromProject, fromBuild, links }) => {
       const data = await gqlClient.request<{
-        linksBuild: { userErrors: { message: string }[] };
+        linksBuild: { errors: { message: string }[] };
       }>(SET_BUILD_LINKS, { fromProject, fromBuild, links });
 
-      const { userErrors } = data.linksBuild;
-      if (userErrors?.length) {
+      const { errors } = data.linksBuild;
+      if (errors?.length) {
         return {
           isError: true,
-          content: [{ type: "text", text: userErrors.map((e) => e.message).join(", ") }],
+          content: [{ type: "text", text: errors.map((e) => e.message).join(", ") }],
         };
       }
       return {

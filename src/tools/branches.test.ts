@@ -62,7 +62,7 @@ describe("list_branches", () => {
 describe("create_branch", () => {
   it("returns the created branch", async () => {
     const branch = { id: 10, name: "feature-x", displayName: "feature-x", description: "My feature", disabled: false };
-    mockRequest.mockResolvedValueOnce({ createBranch: { branch, userErrors: [] } });
+    mockRequest.mockResolvedValueOnce({ createBranch: { branch, errors: [] } });
 
     const client = await createTestClient(registerBranchTools);
     const result = await client.callTool({
@@ -75,9 +75,9 @@ describe("create_branch", () => {
     expect(JSON.parse(text)).toEqual(branch);
   });
 
-  it("returns an error when userErrors is non-empty", async () => {
+  it("returns an error when errors is non-empty", async () => {
     mockRequest.mockResolvedValueOnce({
-      createBranch: { branch: null, userErrors: [{ message: "Branch already exists" }] },
+      createBranch: { branch: null, errors: [{ message: "Branch already exists" }] },
     });
 
     const client = await createTestClient(registerBranchTools);

@@ -27,7 +27,7 @@ const CREATE_VALIDATION_STAMP = `
       description: $description
     }) {
       validationStamp { id name description }
-      userErrors { message }
+      errors { message }
     }
   }
 `;
@@ -65,14 +65,14 @@ export function registerValidationStampTools(server: McpServer, allowMutations: 
     async ({ project, branch, name, description }) => {
       const branchId = await resolveBranchId(project, branch);
       const data = await gqlClient.request<{
-        createValidationStampById: { validationStamp: unknown; userErrors: { message: string }[] };
+        createValidationStampById: { validationStamp: unknown; errors: { message: string }[] };
       }>(CREATE_VALIDATION_STAMP, { branchId, name, description });
 
-      const { validationStamp, userErrors } = data.createValidationStampById;
-      if (userErrors?.length) {
+      const { validationStamp, errors } = data.createValidationStampById;
+      if (errors?.length) {
         return {
           isError: true,
-          content: [{ type: "text", text: userErrors.map((e) => e.message).join(", ") }],
+          content: [{ type: "text", text: errors.map((e) => e.message).join(", ") }],
         };
       }
       return {

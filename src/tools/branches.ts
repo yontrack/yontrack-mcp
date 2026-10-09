@@ -23,7 +23,7 @@ const CREATE_BRANCH = `
       description: $description
     }) {
       branch { id name displayName description disabled project { id name } }
-      userErrors { message }
+      errors { message }
     }
   }
 `;
@@ -57,14 +57,14 @@ export function registerBranchTools(server: McpServer, allowMutations: boolean) 
     },
     async ({ project, name, description }) => {
       const data = await gqlClient.request<{
-        createBranch: { branch: unknown; userErrors: { message: string }[] };
+        createBranch: { branch: unknown; errors: { message: string }[] };
       }>(CREATE_BRANCH, { projectName: project, name, description });
 
-      const { branch, userErrors } = data.createBranch;
-      if (userErrors?.length) {
+      const { branch, errors } = data.createBranch;
+      if (errors?.length) {
         return {
           isError: true,
-          content: [{ type: "text", text: userErrors.map((e) => e.message).join(", ") }],
+          content: [{ type: "text", text: errors.map((e) => e.message).join(", ") }],
         };
       }
       return {

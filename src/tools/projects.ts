@@ -17,7 +17,7 @@ const CREATE_PROJECT = `
   mutation CreateProject($name: String!, $description: String) {
     createProject(input: { name: $name, description: $description }) {
       project { id name description disabled }
-      userErrors { message }
+      errors { message }
     }
   }
 `;
@@ -49,14 +49,14 @@ export function registerProjectTools(server: McpServer, allowMutations: boolean)
     },
     async ({ name, description }) => {
       const data = await gqlClient.request<{
-        createProject: { project: unknown; userErrors: { message: string }[] };
+        createProject: { project: unknown; errors: { message: string }[] };
       }>(CREATE_PROJECT, { name, description });
 
-      const { project, userErrors } = data.createProject;
-      if (userErrors?.length) {
+      const { project, errors } = data.createProject;
+      if (errors?.length) {
         return {
           isError: true,
-          content: [{ type: "text", text: userErrors.map((e) => e.message).join(", ") }],
+          content: [{ type: "text", text: errors.map((e) => e.message).join(", ") }],
         };
       }
       return {

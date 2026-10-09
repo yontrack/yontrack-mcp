@@ -15,7 +15,7 @@ async function connect(capabilities: Capabilities) {
 
 describe("createServer", () => {
   it("exposes the agent-context tools and mentions them on Yontrack 6", async () => {
-    const client = await connect({ agentTools: true, agentPolicy: true });
+    const client = await connect({ agentTools: true, agentPolicy: true, searchResults: true });
 
     const names = (await client.listTools()).tools.map((t) => t.name);
 
@@ -25,7 +25,7 @@ describe("createServer", () => {
   });
 
   it("hides the agent-context tools and does not mention them on Yontrack 5", async () => {
-    const client = await connect({ agentTools: false, agentPolicy: false });
+    const client = await connect({ agentTools: false, agentPolicy: false, searchResults: false });
 
     const names = (await client.listTools()).tools.map((t) => t.name);
 

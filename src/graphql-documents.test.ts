@@ -13,8 +13,12 @@ const schemas: Record<string, GraphQLSchema> = {
   v6: buildSchema(readFileSync(root("yontrack-v6.graphql"), "utf-8")),
 };
 
-// Yontrack 6 only: never sent to a v5 server (see docs/adr/0001-agent-context-tools-v6-only.md)
-const V6_ONLY = new Set(["src/tools/agent-context.ts", "src/tools/agent-context-support.ts"]);
+// Yontrack 6 only: never sent to a v5 server (see docs/adr/0001 and 0002)
+const V6_ONLY = new Set([
+  "src/tools/agent-context.ts",
+  "src/tools/agent-context-support.ts",
+  "src/tools/search-results.ts",
+]);
 
 // Known invalid documents, as "version file NAME": these must be fixed, then removed from here
 const KNOWN_INVALID = new Set<string>([]);
@@ -53,6 +57,7 @@ describe("GraphQL documents", () => {
     expect(names).toContain("CREATE_VALIDATION_RUN");
     expect(names).toContain("PROMOTE_BUILD");
     expect(names).toContain("READINESS");
+    expect(names).toContain("SEARCH_RESULTS");
   });
 
   it.each(cases.filter((c) => !c.known))("$file $name is valid against the $version schema", ({ text, version }) => {

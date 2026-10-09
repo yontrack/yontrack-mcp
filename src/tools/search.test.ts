@@ -21,13 +21,16 @@ const result = (id: string, title: string, accuracy: number) => ({
   data: null,
 });
 
-async function search(args: Record<string, unknown>) {
-  const client = await createTestClient(registerSearchTools);
-  const result = await client.callTool({ name: "search", arguments: args });
+async function call(name: string, args: Record<string, unknown>, searchResults: boolean) {
+  const client = await createTestClient((server) => registerSearchTools(server, searchResults));
+  const result = await client.callTool({ name, arguments: args });
   return JSON.parse((result.content as { type: string; text: string }[])[0].text);
 }
 
-describe("search", () => {
+const search = (args: Record<string, unknown>) => call("search", args, false);
+const searchV6 = (args: Record<string, unknown>) => call("search", args, true);
+
+describe("search (Yontrack 5 API)", () => {
   it("searches the given type only", async () => {
     const page = { pageItems: [result("build", "1.0.0", 1.0)], pageInfo: { totalSize: 1 } };
     mockRequest.mockResolvedValueOnce({ search: page });
@@ -62,5 +65,72 @@ describe("search", () => {
       .mockResolvedValueOnce({ search: { pageItems: [], pageInfo: { totalSize: 0 } } });
 
     expect(await search({ token: "zzznomatch" })).toEqual({ pageItems: [], pageInfo: { totalSize: 0 } });
+  });
+
+  it("searches commits through their type", async () => {
+    const page = { pageItems: [result("scm-commit", "abc123", 1.0)], pageInfo: { totalSize: 1 } };
+    mockRequest.mockResolvedValueOnce({ search: page });
+
+    expect(await call("search_commits", { token: "fix" }, false)).toEqual(page);
+    expect(mockRequest).toHaveBeenCalledWith(expect.stringContaining("token: $token"), {
+      token: "fix",
+      type: "scm-commit",
+      size: 10,
+    });
+  });
+});
+
+describe("search (Yontrack 6 API)", () => {
+  const results = (items: ReturnType<typeof result>[], total: number, message: string | null = null) => ({
+    search: { items, total, capped: false, message },
+  });
+
+  it("searches all types in a single request, keeping the output shape", async () => {
+    mockRequest.mockResolvedValueOnce(results([result("build", "b1", 0.9), result("project", "p1", 0.5)], 9));
+
+    expect(await searchV6({ token: "foo", size: 2 })).toEqual({
+      pageItems: [result("build", "b1", 0.9), result("project", "p1", 0.5)],
+      pageInfo: { totalSize: 9 },
+      capped: false,
+      message: null,
+    });
+    expect(mockRequest).toHaveBeenCalledTimes(1);
+    expect(mockRequest.mock.calls[0][0]).toContain("search(query: $query, types: $types, size: $size)");
+    expect(mockRequest.mock.calls[0][1]).toStrictEqual({ query: "foo", size: 2 });
+  });
+
+  it("restricts the search to the given type", async () => {
+    mockRequest.mockResolvedValueOnce(results([result("build", "1.0.0", 1.0)], 1));
+
+    await searchV6({ token: "foo", type: "build", size: 5 });
+
+    expect(mockRequest).toHaveBeenCalledWith(expect.any(String), { query: "foo", types: ["build"], size: 5 });
+  });
+
+  it("passes on the capped flag and the message of the search", async () => {
+    mockRequest.mockResolvedValueOnce({
+      search: { items: [], total: 1000, capped: true, message: "The search index is being built" },
+    });
+
+    expect(await searchV6({ token: "foo" })).toMatchObject({
+      pageInfo: { totalSize: 1000 },
+      capped: true,
+      message: "The search index is being built",
+    });
+  });
+
+  it.each([
+    ["search_commits", "scm-commit"],
+    ["search_issues", "scm-issue"],
+  ])("%s searches the %s type", async (tool, type) => {
+    mockRequest.mockResolvedValueOnce(results([], 0));
+
+    await call(tool, { token: "fix" }, true);
+
+    expect(mockRequest).toHaveBeenCalledWith(expect.stringContaining("query: $query"), {
+      query: "fix",
+      types: [type],
+      size: 10,
+    });
   });
 });

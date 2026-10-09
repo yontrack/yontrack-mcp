@@ -46,9 +46,13 @@ Read-only tools answering the questions an agent asks before promoting or deploy
 | `dependency_builds_at_level` | Which builds of a dependency project are at a given promotion level? |
 | `agent_policy` | What may the agent behind the token do on a project? (`{ "agent": false }` for a human token) |
 
-These tools are **only available with Yontrack 6**. The server detects them by probing the Yontrack schema (for the `Readiness` and `AgentPolicy` types), not by reading its version: on Yontrack 5 they are not listed at all. The probe runs once per process; when Yontrack cannot be reached, the tools are hidden and the next request probes again (in `stdio` mode the server is built once, so restart it). Set `YONTRACK_AGENT_TOOLS` to `true` or `false` to skip the probe.
+These tools are **only available with Yontrack 6**. The server detects them by probing the Yontrack schema (for the `Readiness` and `AgentPolicy` types), not by reading its version: on Yontrack 5 they are not listed at all. The probe runs once per process; when Yontrack cannot be reached, the tools are hidden and the next request probes again (in `stdio` mode the server is built once, so restart it). Set `YONTRACK_AGENT_TOOLS` to `true` or `false` to force them on or off (the probe still runs, for the [search](#search)).
 
 On Yontrack 6, the `yontrack://schema` resource also serves the Yontrack 6 schema instead of the Yontrack 5 one.
+
+### Search
+
+`search`, `search_commits` and `search_issues` return `{ pageItems, pageInfo: { totalSize } }` on both Yontrack 5 and 6. On Yontrack 5, a search without `type` runs one search per result type and keeps the best results. On Yontrack 6 (detected by probing the schema for the `SearchResults` type, whatever `YONTRACK_AGENT_TOOLS` says), they send a single request and also return `capped` (`true` when `totalSize` is a lower bound) and `message` (e.g. when the search index is being built). Yontrack 6 requires at least 2 characters to search for.
 
 ### Agent sessions
 
@@ -324,7 +328,7 @@ An API token is required to authenticate against Yontrack. To generate one, log 
 | `YONTRACK_URL`               | Yes      | —                             | URL of the Yontrack instance (e.g. `https://yontrack.example.com`)                                                                                                                   |
 | `YONTRACK_TOKEN`             | Yes      | —                             | API token for authenticating against Yontrack                                                                                                                                        |
 | `YONTRACK_MUTATIONS_ENABLED` | No       | `false`                       | Set to `true` to enable mutation tools (create/promote/link operations). When unset or `false`, only read-only query tools are registered.                                           |
-| `YONTRACK_AGENT_TOOLS`       | No       | `auto`                        | Agent-context tools: `auto` registers them when Yontrack 6 is detected, `true` always, `false` never. See [Agent-context tools](#agent-context-tools-yontrack-6).                       |
+| `YONTRACK_AGENT_TOOLS`       | No       | `auto`                        | Agent-context tools: `auto` registers them when Yontrack 6 is detected, `true` always, `false` never. Does not affect the [search](#search). See [Agent-context tools](#agent-context-tools-yontrack-6). |
 | `YONTRACK_UI_URL`            | No       | —                             | URL of the Yontrack UI (e.g. `https://yontrack.example.com`), used for the links returned by the agent-context tools. Links are left out when unset.                                |
 | `YONTRACK_AGENT_SESSION`     | No       | —                             | Agent session ID sent to Yontrack when the incoming MCP request carries no session headers. See [Agent sessions](#agent-sessions).                                                |
 | `YONTRACK_AGENT_SESSION_LINK`| No       | —                             | Link to the agent session (absolute `https` URL), sent together with `YONTRACK_AGENT_SESSION`.                                                                                      |

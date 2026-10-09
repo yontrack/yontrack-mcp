@@ -21,7 +21,7 @@ const { gqlClient } = await import("../client.js");
 const { config } = await import("../config.js");
 const mockRequest = gqlClient.request as ReturnType<typeof vi.fn>;
 
-const V6: Capabilities = { agentTools: true, agentPolicy: true };
+const V6: Capabilities = { agentTools: true, agentPolicy: true, searchResults: true };
 
 function connect(capabilities: Capabilities = V6) {
   return createTestClient((server) => registerAgentContextTools(server, capabilities));
@@ -561,15 +561,15 @@ describe("registration", () => {
   });
 
   it("registers no agent-context tool on Yontrack 5", async () => {
-    expect(await toolNames({ agentTools: false, agentPolicy: false })).toEqual([]);
+    expect(await toolNames({ agentTools: false, agentPolicy: false, searchResults: true })).toEqual([]);
   });
 
   it("registers agent_policy on its own probe, independently of readiness", async () => {
-    expect(await toolNames({ agentTools: false, agentPolicy: true })).toEqual(["agent_policy"]);
+    expect(await toolNames({ agentTools: false, agentPolicy: true, searchResults: true })).toEqual(["agent_policy"]);
   });
 
   it("leaves out agent_policy when the instance has readiness but no agent policy", async () => {
-    const names = await toolNames({ agentTools: true, agentPolicy: false });
+    const names = await toolNames({ agentTools: true, agentPolicy: false, searchResults: true });
     expect(names).toEqual(expect.arrayContaining(AGENT_TOOLS));
     expect(names).not.toContain("agent_policy");
   });

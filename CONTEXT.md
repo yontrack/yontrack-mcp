@@ -9,7 +9,7 @@ The read-only tools answering what an agent needs before promoting or deploying:
 _Avoid_: V6 tools, agentic tools
 
 **Capabilities**:
-What the connected Yontrack instance supports, detected by probing its schema (not its version string). Gates the agent-context tools.
+What the connected Yontrack instance supports, detected by probing its schema (not its version string). Gates the agent-context tools and selects the search API.
 _Avoid_: version, feature flags
 
 **Readiness**:
@@ -39,7 +39,7 @@ What an agent account may do on a project: record evidence, the promotion levels
 - **Readiness** is asked for a **Candidate** against a promotion level or a **Slot**
 - **Changes since deployed** go from a **Baseline** to a **Candidate**
 - An **Agent session** only has an effect with the token of an **Agent account**
-- **Capabilities** decide whether the **Agent-context tools** are listed at all
+- **Capabilities** decide whether the **Agent-context tools** are listed at all, and which search API the search tools use
 
 ## Flagged ambiguities
 

@@ -22,7 +22,7 @@ export function registerAllTools(server: McpServer, capabilities: Capabilities) 
   registerPromotionLevelTools(server, mutationsEnabled);
   registerPromotionRunTools(server, mutationsEnabled);
   registerBuildLinkTools(server, mutationsEnabled);
-  registerSearchTools(server);
+  registerSearchTools(server, capabilities.searchResults);
   registerGraphQLTools(server, mutationsEnabled, capabilities.agentTools);
   registerAgentContextTools(server, capabilities);
 }

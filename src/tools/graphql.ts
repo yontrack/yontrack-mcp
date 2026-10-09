@@ -4,11 +4,18 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { gqlClient } from "../client.js";
 
-// Resolves to yontrack.graphql at the package root, both in dev (src/tools/) and built (build/tools/)
-const schemaPath = fileURLToPath(new URL("../../yontrack.graphql", import.meta.url));
-const schemaContent = readFileSync(schemaPath, "utf-8");
+// Resolve to the schema files at the package root, both in dev (src/tools/) and built (build/tools/)
+function readSchema(file: string): string {
+  return readFileSync(fileURLToPath(new URL(`../../${file}`, import.meta.url)), "utf-8");
+}
 
-export function registerGraphQLTools(server: McpServer, allowMutations: boolean) {
+const schemaV5 = readSchema("yontrack-v5.graphql");
+// Snapshot of the Yontrack 6 schema, to be refreshed at each 6.x release
+const schemaV6 = readSchema("yontrack-v6.graphql");
+
+/** `v6` is true when the connected Yontrack is detected as a Yontrack 6 (see src/capabilities.ts). */
+export function registerGraphQLTools(server: McpServer, allowMutations: boolean, v6 = false) {
+  const schemaContent = v6 ? schemaV6 : schemaV5;
   server.resource(
     "yontrack-schema",
     "yontrack://schema",

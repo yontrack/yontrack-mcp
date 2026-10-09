@@ -20,20 +20,26 @@ export YONTRACK_TOKEN=your-token
 export YONTRACK_MUTATIONS_ENABLED=true              # optional; enables mutation tools (default: false)
 export YONTRACK_MCP_SERVER_URL=https://example.com  # optional; enables OAuth2 when set with AUTH_PASSWORD
 export YONTRACK_MCP_AUTH_PASSWORD=secret            # optional; enables OAuth2 when set with SERVER_URL
+export YONTRACK_AGENT_TOOLS=auto                    # optional; auto|true|false — agent-context tools (Yontrack 6)
+export YONTRACK_UI_URL=https://your-instance        # optional; UI links in the agent-context tools
+export YONTRACK_AGENT_SESSION=...                   # optional; agent session sent when the MCP request has none
+export YONTRACK_AGENT_SESSION_LINK=https://...      # optional; link of that session
 ```
 
 ## Architecture
 
 This is a TypeScript MCP server that exposes Yontrack (Ontrack CI/CD platform) functionality via its GraphQL API. It uses `@modelcontextprotocol/sdk` for the MCP protocol, `graphql-request` for GraphQL calls, and `zod` for input validation.
 
-**Entry flow:** `src/index.ts` → `src/server.ts` (creates McpServer via factory) → `src/tools/index.ts` (registers all tools)
+**Entry flow:** `src/index.ts` (awaits `getCapabilities()`) → `src/server.ts` (creates McpServer via factory) → `src/tools/index.ts` (registers all tools)
 
 **Transport:** The server uses Streamable HTTP transport (`POST /mcp`) via an Express app. It listens on `PORT` (default `3000`). A `GET /health` endpoint is also served for liveness/readiness probes.
 
 **Core modules:**
 - `src/config.ts` — Validates `YONTRACK_URL` and `YONTRACK_TOKEN` env vars via Zod (exits on failure); also parses `YONTRACK_MUTATIONS_ENABLED` (optional boolean, default `false`) and exports `mutationsEnabled`; exports `oauthConfig` (non-null when both `YONTRACK_MCP_SERVER_URL` and `YONTRACK_MCP_AUTH_PASSWORD` are set)
-- `src/client.ts` — Exports a `gqlClient` GraphQL client authenticated via `X-Ontrack-Token` header
-- `src/server.ts` — Exports `createServer()` factory; called once per HTTP request (stateless)
+- `src/client.ts` — Exports a `gqlClient` GraphQL client and `yontrackHeaders()`: `X-Ontrack-Token` plus the agent session headers, computed per request
+- `src/session.ts` — Agent session (`X-Yontrack-Agent-Session[-Link]`): carried per MCP request through `AsyncLocalStorage` (`runWithAgentSession`), falling back to `YONTRACK_AGENT_SESSION[_LINK]`
+- `src/capabilities.ts` — Probes the Yontrack schema for `Readiness` / `AgentPolicy` (cached per process, errors not cached) to gate the Yontrack 6 tools; `YONTRACK_AGENT_TOOLS` overrides it (see `docs/adr/0001-agent-context-tools-v6-only.md`)
+- `src/server.ts` — Exports `createServer(serverUrl, capabilities)` factory; called once per HTTP request (stateless)
 - `src/auth.ts` — OAuth2 provider implementation (in-memory token stores, HTML authorization form, PKCE support); exports `createOAuthProvider`, `clientsStore`, `generateAuthCode`, `renderAuthFormHtml`
 - `src/utils.ts` — `resolveBranchId(project, branch)` helper that resolves names to a branch ID (required for some mutations)
 
@@ -42,7 +48,7 @@ This is a TypeScript MCP server that exposes Yontrack (Ontrack CI/CD platform) f
 - `app.use(mcpAuthRouter(...))` — mounts `/.well-known/oauth-authorization-server`, `/authorize`, `/token`, `/register`, `/revoke`
 - `/mcp` is protected by `requireBearerAuth` middleware from the SDK
 
-**Tools** (24 total across 9 files in `src/tools/`): projects, branches, builds, validation stamps, validation runs, promotion levels, promotion runs, build links, search.
+**Tools** (28 total across 11 files in `src/tools/`): projects, branches, builds, validation stamps, validation runs, promotion levels, promotion runs, build links, search, GraphQL, and the agent-context tools (`agent-context.ts`, Yontrack 6 only: `build_readiness`, `changes_since_deployed`, `deployments`, `dependency_builds_at_level`, `agent_policy`). Anything added for Yontrack 6 only goes behind `Capabilities`, never registered unconditionally.
 
 Each tool file follows a consistent pattern: define GraphQL strings → call `server.tool()` with a Zod input schema → async handler → check `userErrors` array on mutations.
 
@@ -75,7 +81,7 @@ The chart lives in `helm/yontrack-mcp-chart/`. Key files:
 
 ## Yontrack GraphQL API Gotchas
 
-The full schema is in `yontrack.graphql`. Key input field quirks to watch for when adding/modifying tools:
+The full schemas are in `yontrack-v5.graphql` and `yontrack-v6.graphql` (a snapshot of Yontrack's `main`, to refresh at each 6.x release); the `yontrack://schema` resource serves the one matching the detected version. Key input field quirks to watch for when adding/modifying tools:
 
 - `createBranch` input uses `projectName` (not `project`)
 - `createBuild` input uses `projectName` + `branchName`
@@ -83,6 +89,9 @@ The full schema is in `yontrack.graphql`. Key input field quirks to watch for wh
 - `createValidationRun` input field is `validationRunStatus` (not `status`)
 - Build dependency queries use `usingQualified` / `usedByQualified` fields (not `using` / `usedBy`)
 - `linksBuild` mutation uses `fromProject` + `fromBuild` only (no `fromBranch`); link items use `project` + `build` + optional `qualifier`
+- (V6) `Build.readiness(promotionLevel | slotId)` takes exactly one of the two; slots are resolved by name through `Build.slots(environment, qualifier)` (qualifier `""` is the default slot)
+- `builds(buildBranchFilter: ...)` requires `branch`; across a project use `buildProjectFilter: { promotionName, maximumCount }`
+- `scmChangeLog(from, to)` takes build IDs as `Int`, while `Build.id` comes back as an `ID` string
 
 ## Agent skills
 

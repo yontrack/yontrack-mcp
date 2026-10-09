@@ -3,7 +3,9 @@ import { createTestClient } from "../test/helpers.js";
 
 // Mock fs before the module is imported — readFileSync runs at load time
 vi.mock("node:fs", () => ({
-  readFileSync: vi.fn().mockReturnValue("type Query { hello: String }"),
+  readFileSync: vi.fn((path: string) =>
+    path.endsWith("yontrack-v6.graphql") ? "type Query { readiness: String }" : "type Query { hello: String }"
+  ),
 }));
 
 vi.mock("../client.js", () => ({
@@ -29,6 +31,20 @@ describe("yontrack://schema resource", () => {
     const content = result.contents[0] as { uri: string; text: string };
     expect(content.uri).toBe("yontrack://schema");
     expect(content.text).toBe("type Query { hello: String }");
+  });
+
+  it("returns the Yontrack 5 schema unless Yontrack 6 is detected", async () => {
+    const client = await createTestClient((server, allowMutations) => registerGraphQLTools(server, allowMutations, false));
+    const result = await client.readResource({ uri: "yontrack://schema" });
+
+    expect((result.contents[0] as { text: string }).text).toBe("type Query { hello: String }");
+  });
+
+  it("returns the Yontrack 6 schema when Yontrack 6 is detected", async () => {
+    const client = await createTestClient((server, allowMutations) => registerGraphQLTools(server, allowMutations, true));
+    const result = await client.readResource({ uri: "yontrack://schema" });
+
+    expect((result.contents[0] as { text: string }).text).toBe("type Query { readiness: String }");
   });
 });
 

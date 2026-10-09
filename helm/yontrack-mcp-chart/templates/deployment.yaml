@@ -51,6 +51,13 @@ spec:
                   key: YONTRACK_TOKEN
             - name: YONTRACK_MUTATIONS_ENABLED
               value: {{ .Values.yontrack.mutationsEnabled | toString | quote }}
+            - name: YONTRACK_AGENT_TOOLS
+              {{- /* not `default`: it would turn an unquoted `false` into "auto" */}}
+              value: {{ if kindIs "invalid" .Values.yontrack.agentTools }}"auto"{{ else }}{{ .Values.yontrack.agentTools | toString | quote }}{{ end }}
+            {{- if .Values.yontrack.uiUrl }}
+            - name: YONTRACK_UI_URL
+              value: {{ .Values.yontrack.uiUrl | quote }}
+            {{- end }}
             {{- if .Values.oauth.serverUrl }}
             - name: YONTRACK_MCP_SERVER_URL
               value: {{ .Values.oauth.serverUrl | quote }}

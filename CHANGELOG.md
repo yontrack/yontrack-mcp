@@ -1,3 +1,10 @@
+## [1.14.3](https://github.com/yontrack/yontrack-mcp/compare/v1.14.2...v1.14.3) (2026-10-09)
+
+
+### Bug Fixes
+
+* search across all result types when no type is given ([0d4b108](https://github.com/yontrack/yontrack-mcp/commit/0d4b108c99a79ebdafaa95adb0b59eeff94bf942))
+
 ## [1.14.2](https://github.com/yontrack/yontrack-mcp/compare/v1.14.1...v1.14.2) (2026-10-09)
 
 

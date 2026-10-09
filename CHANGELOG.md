@@ -1,3 +1,10 @@
+## [1.14.2](https://github.com/yontrack/yontrack-mcp/compare/v1.14.1...v1.14.2) (2026-10-09)
+
+
+### Bug Fixes
+
+* select errors instead of userErrors on mutation payloads ([b3b2955](https://github.com/yontrack/yontrack-mcp/commit/b3b29553f74968ea6ac730cc9648d1694f4dbac9))
+
 ## [1.14.1](https://github.com/yontrack/yontrack-mcp/compare/v1.14.0...v1.14.1) (2026-10-09)
 
 

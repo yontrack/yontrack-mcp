@@ -29,7 +29,7 @@ const CREATE_PROMOTION_LEVEL = `
       description: $description
     }) {
       promotionLevel { id name description branch { id name } }
-      userErrors { message }
+      errors { message }
     }
   }
 `;
@@ -91,14 +91,14 @@ export function registerPromotionLevelTools(server: McpServer, allowMutations: b
     async ({ project, branch, name, description }) => {
       const branchId = await resolveBranchId(project, branch);
       const data = await gqlClient.request<{
-        createPromotionLevelById: { promotionLevel: unknown; userErrors: { message: string }[] };
+        createPromotionLevelById: { promotionLevel: unknown; errors: { message: string }[] };
       }>(CREATE_PROMOTION_LEVEL, { branchId, name, description });
 
-      const { promotionLevel, userErrors } = data.createPromotionLevelById;
-      if (userErrors?.length) {
+      const { promotionLevel, errors } = data.createPromotionLevelById;
+      if (errors?.length) {
         return {
           isError: true,
-          content: [{ type: "text", text: userErrors.map((e) => e.message).join(", ") }],
+          content: [{ type: "text", text: errors.map((e) => e.message).join(", ") }],
         };
       }
       return {

@@ -45,7 +45,7 @@ const CREATE_VALIDATION_RUN = `
         runOrder
         lastStatus { statusID { id name } }
       }
-      userErrors { message }
+      errors { message }
     }
   }
 `;
@@ -88,7 +88,7 @@ export function registerValidationRunTools(server: McpServer, allowMutations: bo
     },
     async ({ project, branch, build, validationStamp, status, description }) => {
       const data = await gqlClient.request<{
-        createValidationRun: { validationRun: unknown; userErrors: { message: string }[] };
+        createValidationRun: { validationRun: unknown; errors: { message: string }[] };
       }>(CREATE_VALIDATION_RUN, {
         project,
         branch,
@@ -98,11 +98,11 @@ export function registerValidationRunTools(server: McpServer, allowMutations: bo
         description,
       });
 
-      const { validationRun, userErrors } = data.createValidationRun;
-      if (userErrors?.length) {
+      const { validationRun, errors } = data.createValidationRun;
+      if (errors?.length) {
         return {
           isError: true,
-          content: [{ type: "text", text: userErrors.map((e) => e.message).join(", ") }],
+          content: [{ type: "text", text: errors.map((e) => e.message).join(", ") }],
         };
       }
       return {

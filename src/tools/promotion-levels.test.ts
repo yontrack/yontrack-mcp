@@ -104,7 +104,7 @@ describe("get_promotion_level_image", () => {
 describe("create_promotion_level", () => {
   it("returns the created promotion level", async () => {
     const level = { id: 3, name: "GOLD", description: "Gold level", branch: { id: 42, name: "main" } };
-    mockRequest.mockResolvedValueOnce({ createPromotionLevelById: { promotionLevel: level, userErrors: [] } });
+    mockRequest.mockResolvedValueOnce({ createPromotionLevelById: { promotionLevel: level, errors: [] } });
 
     const client = await createTestClient(registerPromotionLevelTools);
     const result = await client.callTool({
@@ -117,9 +117,9 @@ describe("create_promotion_level", () => {
     expect(JSON.parse(text)).toEqual(level);
   });
 
-  it("returns an error when userErrors is non-empty", async () => {
+  it("returns an error when errors is non-empty", async () => {
     mockRequest.mockResolvedValueOnce({
-      createPromotionLevelById: { promotionLevel: null, userErrors: [{ message: "Promotion level already exists" }] },
+      createPromotionLevelById: { promotionLevel: null, errors: [{ message: "Promotion level already exists" }] },
     });
 
     const client = await createTestClient(registerPromotionLevelTools);

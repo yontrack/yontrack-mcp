@@ -62,7 +62,7 @@ describe("get_validation_runs", () => {
 describe("create_validation_run", () => {
   it("returns the created validation run", async () => {
     const run = { id: 10, runOrder: 1, lastStatus: { statusID: { id: "PASSED", name: "Passed" } } };
-    mockRequest.mockResolvedValueOnce({ createValidationRun: { validationRun: run, userErrors: [] } });
+    mockRequest.mockResolvedValueOnce({ createValidationRun: { validationRun: run, errors: [] } });
 
     const client = await createTestClient(registerValidationRunTools);
     const result = await client.callTool({
@@ -75,9 +75,9 @@ describe("create_validation_run", () => {
     expect(JSON.parse(text)).toEqual(run);
   });
 
-  it("returns an error when userErrors is non-empty", async () => {
+  it("returns an error when errors is non-empty", async () => {
     mockRequest.mockResolvedValueOnce({
-      createValidationRun: { validationRun: null, userErrors: [{ message: "Validation stamp not found" }] },
+      createValidationRun: { validationRun: null, errors: [{ message: "Validation stamp not found" }] },
     });
 
     const client = await createTestClient(registerValidationRunTools);

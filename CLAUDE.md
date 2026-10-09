@@ -50,7 +50,7 @@ This is a TypeScript MCP server that exposes Yontrack (Ontrack CI/CD platform) f
 
 **Tools** (28 total across 11 files in `src/tools/`): projects, branches, builds, validation stamps, validation runs, promotion levels, promotion runs, build links, search, GraphQL, and the agent-context tools (`agent-context.ts`, Yontrack 6 only: `build_readiness`, `changes_since_deployed`, `deployments`, `dependency_builds_at_level`, `agent_policy`). Anything added for Yontrack 6 only goes behind `Capabilities`, never registered unconditionally.
 
-Each tool file follows a consistent pattern: define GraphQL strings → call `server.tool()` with a Zod input schema → async handler → check `userErrors` array on mutations.
+Each tool file follows a consistent pattern: define GraphQL strings → call `server.tool()` with a Zod input schema → async handler → check the `errors` array of the mutation payload (Yontrack has no `userErrors` field). `src/graphql-documents.test.ts` validates every query and mutation against both schema snapshots.
 
 ## Versioning & releases
 
@@ -83,6 +83,7 @@ The chart lives in `helm/yontrack-mcp-chart/`. Key files:
 
 The full schemas are in `yontrack-v5.graphql` and `yontrack-v6.graphql` (a snapshot of Yontrack's `main`, to refresh at each 6.x release); the `yontrack://schema` resource serves the one matching the detected version. Key input field quirks to watch for when adding/modifying tools:
 
+- Mutation payloads expose `errors { message }` (not `userErrors`); agent-policy refusals come back there too
 - `createBranch` input uses `projectName` (not `project`)
 - `createBuild` input uses `projectName` + `branchName`
 - Creating validation stamps and promotion levels requires `branchId` — use `resolveBranchId()` from `src/utils.ts`

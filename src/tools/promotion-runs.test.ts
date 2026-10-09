@@ -62,7 +62,7 @@ describe("get_promotion_runs", () => {
 describe("promote_build", () => {
   it("returns the created promotion run", async () => {
     const run = { id: 5, description: null, creation: { user: "alice", time: "2024-01-01T00:00:00Z" }, promotionLevel: { id: 1, name: "BRONZE" } };
-    mockRequest.mockResolvedValueOnce({ createPromotionRun: { promotionRun: run, userErrors: [] } });
+    mockRequest.mockResolvedValueOnce({ createPromotionRun: { promotionRun: run, errors: [] } });
 
     const client = await createTestClient(registerPromotionRunTools);
     const result = await client.callTool({
@@ -75,9 +75,9 @@ describe("promote_build", () => {
     expect(JSON.parse(text)).toEqual(run);
   });
 
-  it("returns an error when userErrors is non-empty", async () => {
+  it("returns an error when errors is non-empty", async () => {
     mockRequest.mockResolvedValueOnce({
-      createPromotionRun: { promotionRun: null, userErrors: [{ message: "Build not found" }] },
+      createPromotionRun: { promotionRun: null, errors: [{ message: "Build not found" }] },
     });
 
     const client = await createTestClient(registerPromotionRunTools);
@@ -89,6 +89,23 @@ describe("promote_build", () => {
     expect(result.isError).toBe(true);
     const text = (result.content as { type: string; text: string }[])[0].text;
     expect(text).toContain("Build not found");
+  });
+
+  it("returns the agent policy refusal as an error", async () => {
+    const refusal = "agent x[agent] may not promote to GOLD: GOLD is reserved to humans (agent policy)";
+    mockRequest.mockResolvedValueOnce({
+      createPromotionRun: { promotionRun: null, errors: [{ message: refusal }] },
+    });
+
+    const client = await createTestClient(registerPromotionRunTools);
+    const result = await client.callTool({
+      name: "promote_build",
+      arguments: { project: "myproject", branch: "main", build: "1.0.1", promotion: "GOLD" },
+    });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as { type: string; text: string }[])[0].text;
+    expect(text).toBe(refusal);
   });
 
   it("is not registered when mutations are disabled", async () => {

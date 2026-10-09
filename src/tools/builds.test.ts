@@ -77,7 +77,7 @@ describe("find_build", () => {
 describe("create_build", () => {
   it("returns the created build", async () => {
     const build = { id: 10, name: "2.0.0", displayName: "2.0.0" };
-    mockRequest.mockResolvedValueOnce({ createBuild: { build, userErrors: [] } });
+    mockRequest.mockResolvedValueOnce({ createBuild: { build, errors: [] } });
 
     const client = await createTestClient(registerBuildTools);
     const result = await client.callTool({
@@ -90,9 +90,9 @@ describe("create_build", () => {
     expect(JSON.parse(text)).toEqual(build);
   });
 
-  it("returns an error when userErrors is non-empty", async () => {
+  it("returns an error when errors is non-empty", async () => {
     mockRequest.mockResolvedValueOnce({
-      createBuild: { build: null, userErrors: [{ message: "Branch not found" }] },
+      createBuild: { build: null, errors: [{ message: "Branch not found" }] },
     });
 
     const client = await createTestClient(registerBuildTools);

@@ -41,7 +41,7 @@ const PROMOTE_BUILD = `
         creation { user time }
         promotionLevel { id name }
       }
-      userErrors { message }
+      errors { message }
     }
   }
 `;
@@ -80,14 +80,14 @@ export function registerPromotionRunTools(server: McpServer, allowMutations: boo
     },
     async ({ project, branch, build, promotion, description }) => {
       const data = await gqlClient.request<{
-        createPromotionRun: { promotionRun: unknown; userErrors: { message: string }[] };
+        createPromotionRun: { promotionRun: unknown; errors: { message: string }[] };
       }>(PROMOTE_BUILD, { project, branch, build, promotion, description });
 
-      const { promotionRun, userErrors } = data.createPromotionRun;
-      if (userErrors?.length) {
+      const { promotionRun, errors } = data.createPromotionRun;
+      if (errors?.length) {
         return {
           isError: true,
-          content: [{ type: "text", text: userErrors.map((e) => e.message).join(", ") }],
+          content: [{ type: "text", text: errors.map((e) => e.message).join(", ") }],
         };
       }
       return {

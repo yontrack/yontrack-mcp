@@ -106,6 +106,8 @@ jobs:
     if: needs.release.outputs.new_release_published == 'true'
     permissions:
       contents: read
+      # npm trusted publishing: npm authenticates the job through GitHub OIDC, no token needed
+      id-token: write
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -113,12 +115,12 @@ jobs:
           node-version: 22
           cache: npm
           registry-url: https://registry.npmjs.org
+      # Trusted publishing requires npm >= 11.5.1 (Node 22 ships with npm 10)
+      - run: npm install -g npm@^11.5.1
       - run: npm ci
       - run: npm version ${{ needs.release.outputs.new_release_version }} --no-git-tag-version
       - run: npm run build
       - run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-release:
     runs-on: ubuntu-latest

@@ -2,6 +2,10 @@
   "name": "yontrack-mcp",
   "version": "1.0.0",
   "description": "MCP server for Yontrack (Ontrack CI/CD monitoring platform)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yontrack/yontrack-mcp.git"
+  },
   "type": "module",
   "bin": {
     "yontrack-mcp": "./build/index.js"

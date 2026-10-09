@@ -44,22 +44,21 @@ YONTRACK_URL=https://your-ontrack-instance YONTRACK_TOKEN=your-token \
 
 ## CI secrets setup
 
-The release workflow requires three repository secrets. Add them under **Settings → Secrets and variables → Actions → New repository secret** in the GitHub repository.
+The release workflow requires two repository secrets, and npm trusted publishing. Add the secrets under **Settings → Secrets and variables → Actions → New repository secret** in the GitHub repository.
 
-### NPM_TOKEN
+### npm trusted publishing
 
-Required by the `npm-publish` job to publish the package to npmjs.com.
+The `npm-publish` job publishes the package to npmjs.com with [trusted publishing](https://docs.npmjs.com/trusted-publishers): npm authenticates the GitHub Actions job through OIDC, so there is no npm token to store or rotate.
 
-1. Log in to [npmjs.com](https://www.npmjs.com)
-2. Click your avatar → **Access Tokens** → **Generate New Token** → **Granular Access Token**
-3. Fill in the form:
-   - **Token name**: e.g. `yontrack-mcp CI`
-   - **Expiration**: choose a duration appropriate for your CI setup (e.g. 1 year)
-   - **Packages and scopes**: set to **Read and write**
-     - For the **first publish** (package does not exist on npm yet): choose **All packages**
-     - After the package exists: rotate the token and choose **Only select packages and scopes** → `yontrack-mcp`
-4. Click **Generate token** and copy it (shown only once)
-5. Add it as a repository secret named `NPM_TOKEN`
+1. Log in to [npmjs.com](https://www.npmjs.com) and open the `yontrack-mcp` package → **Settings** → **Trusted publishing**
+2. Choose **GitHub Actions** and fill in:
+   - **Organization or user**: `yontrack`
+   - **Repository**: `yontrack-mcp`
+   - **Workflow filename**: `ci.yml`
+   - **Environment**: leave empty
+3. Save. Optionally, under **Publishing access**, require two-factor authentication and disallow tokens, so that only the workflow can publish.
+
+The job needs `id-token: write` and npm 11.5.1 or later (both set in `ci.yml`), and the `repository` field of `package.json` must match the GitHub repository.
 
 ### DOCKERHUB_USERNAME and DOCKERHUB_TOKEN
 

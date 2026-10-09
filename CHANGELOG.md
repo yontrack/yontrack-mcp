@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/yontrack/yontrack-mcp/compare/v1.14.0...v1.14.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* **ci:** publish to npm with trusted publishing ([bc7d26c](https://github.com/yontrack/yontrack-mcp/commit/bc7d26c7919f7bc87aa6631244289e2deeaff3b3))
+
 # [1.14.0](https://github.com/yontrack/yontrack-mcp/compare/v1.13.0...v1.14.0) (2026-10-09)
 
 

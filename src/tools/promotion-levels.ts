@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { gqlClient } from "../client.js";
+import { gqlClient, yontrackHeaders } from "../client.js";
 import { config } from "../config.js";
 import { resolveBranchId } from "../utils.js";
 
@@ -63,7 +63,7 @@ export function registerPromotionLevelTools(server: McpServer, allowMutations: b
     async ({ promotionLevelId }) => {
       const url = `${config.YONTRACK_URL}/rest/structure/promotionLevels/${promotionLevelId}/image`;
       const response = await fetch(url, {
-        headers: { "X-Ontrack-Token": config.YONTRACK_TOKEN },
+        headers: yontrackHeaders(),
       });
       if (!response.ok) {
         return {

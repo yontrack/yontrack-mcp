@@ -56,6 +56,13 @@ yontrack:
   token: ""
   # Set to true to allow mutation tools (create/promote/link operations). Disabled by default.
   mutationsEnabled: false
+  # Agent-context tools (Yontrack 6+): "auto" detects them on the Yontrack instance, "true" forces them on, "false" off.
+  agentTools: auto
+  # Optional: URL of the Yontrack UI (e.g. https://yontrack.example.com), used for the links in the agent-context tools.
+  # Links are left out when empty.
+  uiUrl: ""
+  # The agent session is not configured here: a shared deployment receives it from the
+  # X-Yontrack-Agent-Session / X-Yontrack-Agent-Session-Link headers of each MCP request.
 
 # OAuth2 authentication (required for claude.ai)
 # Both serverUrl and authPassword must be set together to enable OAuth2. When enabled,

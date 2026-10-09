@@ -9,6 +9,8 @@ The server uses the [Streamable HTTP transport](https://modelcontextprotocol.io/
 - **Read-only by default** — only query tools are active unless mutations are explicitly enabled
 - **Mutation tools** — create projects, branches, builds, validation stamps/runs, promotion levels/runs, and build links (opt-in via `YONTRACK_MUTATIONS_ENABLED=true`)
 - **Raw GraphQL access** — `graphql_query` tool for queries not covered by the dedicated tools
+- **Agent-context tools (Yontrack 6+)** — readiness, change log since what is deployed, what is deployed where, dependency builds at a level, agent policy
+- **Agent sessions** — forwards the agent session to Yontrack so that what an agent records is attributed to its session
 - **OAuth2 support** — required for claude.ai; enabled by setting two environment variables
 - **Docker image** — published to Docker Hub on every release (`nemerosa/yontrack-mcp:latest`)
 - **Helm chart** — OCI chart for Kubernetes deployments with full secret management support
@@ -31,6 +33,31 @@ By default only read-only tools are available. Set `YONTRACK_MUTATIONS_ENABLED=t
 | GraphQL | `graphql_query` ✝ | — |
 
 > ✝ `graphql_query` is always registered but rejects requests whose query string starts with `mutation` when `YONTRACK_MUTATIONS_ENABLED` is not set.
+
+### Agent-context tools (Yontrack 6+)
+
+Read-only tools answering the questions an agent asks before promoting or deploying. They return compact JSON (names, `displayName`, statuses, missing items with their kinds, commit assistants) with links to the Yontrack UI when `YONTRACK_UI_URL` is set.
+
+| Tool | Answers |
+|---|---|
+| `build_readiness` | Is a build ready for a promotion level or a slot (environment + optional qualifier), and what is missing? |
+| `changes_since_deployed` | What changed (commits with their assistants, issues, dependency changes) between what is deployed in a slot, or the last build at a promotion level on the same branch, and a candidate build? |
+| `deployments` | What is deployed where for a project, and which pipelines are in progress? |
+| `dependency_builds_at_level` | Which builds of a dependency project are at a given promotion level? |
+| `agent_policy` | What may the agent behind the token do on a project? (`{ "agent": false }` for a human token) |
+
+These tools are **only available with Yontrack 6**. The server detects them by probing the Yontrack schema (for the `Readiness` and `AgentPolicy` types), not by reading its version: on Yontrack 5 they are not listed at all. The probe runs once per process; when Yontrack cannot be reached, the tools are hidden and the next request probes again (in `stdio` mode the server is built once, so restart it). Set `YONTRACK_AGENT_TOOLS` to `true` or `false` to skip the probe.
+
+On Yontrack 6, the `yontrack://schema` resource also serves the Yontrack 6 schema instead of the Yontrack 5 one.
+
+### Agent sessions
+
+When an agent uses this server with the token of an **agent account** (Yontrack 6), Yontrack can attribute what it records (builds, validations, promotions…) to the agent's session. The server sends the `X-Yontrack-Agent-Session` and `X-Yontrack-Agent-Session-Link` headers on every request to Yontrack, taken from:
+
+1. the same headers on the incoming MCP request, when it carries any (a shared HTTP deployment serving several agents), or else
+2. the `YONTRACK_AGENT_SESSION` and `YONTRACK_AGENT_SESSION_LINK` environment variables (one server process per agent, e.g. `stdio`).
+
+The session and its link are always taken together from the same source, and never invented: nothing is sent when neither is set. Yontrack validates them (at most 255 characters for the session, an absolute `https` URL for the link) and ignores them for human tokens and on Yontrack 5.
 
 ## Installation
 
@@ -124,6 +151,8 @@ helm install yontrack-mcp \
 | `yontrack.url` | URL of the Yontrack instance | `""` |
 | `yontrack.token` | Yontrack API token | `""` |
 | `yontrack.mutationsEnabled` | Enable mutation tools (create/promote/link operations) | `false` |
+| `yontrack.agentTools` | Agent-context tools: `auto` (detected on Yontrack 6), `true` or `false` | `auto` |
+| `yontrack.uiUrl` | URL of the Yontrack UI, for the links in the agent-context tools | `""` |
 | `oauth.serverUrl` | Public HTTPS URL of this server — enables OAuth2 when set with `oauth.authPassword` | `""` |
 | `oauth.authPassword` | Password for the browser authorization form — enables OAuth2 when set with `oauth.serverUrl` | `""` |
 | `persistence.enabled` | Create a PVC and mount it at `/data`; sets the clients file to `/data/clients.json` | `true` |
@@ -295,6 +324,10 @@ An API token is required to authenticate against Yontrack. To generate one, log 
 | `YONTRACK_URL`               | Yes      | —                             | URL of the Yontrack instance (e.g. `https://yontrack.example.com`)                                                                                                                   |
 | `YONTRACK_TOKEN`             | Yes      | —                             | API token for authenticating against Yontrack                                                                                                                                        |
 | `YONTRACK_MUTATIONS_ENABLED` | No       | `false`                       | Set to `true` to enable mutation tools (create/promote/link operations). When unset or `false`, only read-only query tools are registered.                                           |
+| `YONTRACK_AGENT_TOOLS`       | No       | `auto`                        | Agent-context tools: `auto` registers them when Yontrack 6 is detected, `true` always, `false` never. See [Agent-context tools](#agent-context-tools-yontrack-6).                       |
+| `YONTRACK_UI_URL`            | No       | —                             | URL of the Yontrack UI (e.g. `https://yontrack.example.com`), used for the links returned by the agent-context tools. Links are left out when unset.                                |
+| `YONTRACK_AGENT_SESSION`     | No       | —                             | Agent session ID sent to Yontrack when the incoming MCP request carries no session headers. See [Agent sessions](#agent-sessions).                                                |
+| `YONTRACK_AGENT_SESSION_LINK`| No       | —                             | Link to the agent session (absolute `https` URL), sent together with `YONTRACK_AGENT_SESSION`.                                                                                      |
 | `YONTRACK_MCP_SERVER_URL`    | No       | —                             | Public HTTPS URL of this server. When set together with `YONTRACK_MCP_AUTH_PASSWORD`, enables OAuth2 (required for claude.ai).                                                       |
 | `YONTRACK_MCP_AUTH_PASSWORD` | No       | —                             | Password users must enter in the browser authorization form. Required together with `YONTRACK_MCP_SERVER_URL` to enable OAuth2.                                                      |
 | `YONTRACK_MCP_CLIENTS_FILE`  | No       | `./yontrack-mcp-clients.json` | File path where registered OAuth2 clients are persisted so they survive restarts. The Helm chart sets this automatically to `/data/clients.json` when `persistence.enabled` is true. |

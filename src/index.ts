@@ -7,6 +7,8 @@ import { mcpAuthRouter } from "@modelcontextprotocol/sdk/server/auth/router.js";
 import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js";
 import { createServer } from "./server.js";
 import { oauthConfig } from "./config.js";
+import { getCapabilities } from "./capabilities.js";
+import { agentSessionFromHeaders, runWithAgentSession } from "./session.js";
 import {
   createOAuthProvider,
   clientsStore,
@@ -15,7 +17,8 @@ import {
 } from "./auth.js";
 
 if (process.argv[2] === "stdio") {
-  const server = createServer();
+  // One process per agent: capabilities are probed once, the agent session comes from the environment
+  const server = createServer(undefined, await getCapabilities());
   const transport = new StdioServerTransport();
   await server.connect(transport);
 } else {
@@ -50,14 +53,17 @@ app.get("/health", (_req, res) => {
 
 // MCP request handler
 async function handleMcp(req: Request, res: Response) {
-  const server = createServer(oauthConfig?.serverUrl);
+  const server = createServer(oauthConfig?.serverUrl, await getCapabilities());
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
   });
   res.on("close", () => transport.close());
   await server.connect(transport);
-  // req.body is pre-parsed by express.json() for POST requests
-  await transport.handleRequest(req as any, res as any, req.body);
+  // The agent session headers of this request are forwarded to Yontrack by every call it makes
+  await runWithAgentSession(agentSessionFromHeaders(req.headers), () =>
+    // req.body is pre-parsed by express.json() for POST requests
+    transport.handleRequest(req as any, res as any, req.body)
+  );
 }
 
 function oauthLog(msg: string): void {

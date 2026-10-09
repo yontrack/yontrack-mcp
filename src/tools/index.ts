@@ -10,8 +10,10 @@ import { registerPromotionRunTools } from "./promotion-runs.js";
 import { registerBuildLinkTools } from "./build-links.js";
 import { registerSearchTools } from "./search.js";
 import { registerGraphQLTools } from "./graphql.js";
+import { registerAgentContextTools } from "./agent-context.js";
+import type { Capabilities } from "../capabilities.js";
 
-export function registerAllTools(server: McpServer) {
+export function registerAllTools(server: McpServer, capabilities: Capabilities) {
   registerProjectTools(server, mutationsEnabled);
   registerBranchTools(server, mutationsEnabled);
   registerBuildTools(server, mutationsEnabled);
@@ -21,5 +23,6 @@ export function registerAllTools(server: McpServer) {
   registerPromotionRunTools(server, mutationsEnabled);
   registerBuildLinkTools(server, mutationsEnabled);
   registerSearchTools(server);
-  registerGraphQLTools(server, mutationsEnabled);
+  registerGraphQLTools(server, mutationsEnabled, capabilities.agentTools);
+  registerAgentContextTools(server, capabilities);
 }

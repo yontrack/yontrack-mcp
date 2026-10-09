@@ -9,7 +9,7 @@ RUN npm run build
 FROM node:22-alpine
 WORKDIR /app
 COPY package*.json ./
-COPY yontrack.graphql /app/
+COPY yontrack-v5.graphql yontrack-v6.graphql /app/
 COPY public ./public
 RUN npm ci --omit=dev
 COPY --from=build /app/build ./build

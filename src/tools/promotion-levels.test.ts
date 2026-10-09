@@ -4,6 +4,7 @@ import { registerPromotionLevelTools } from "./promotion-levels.js";
 
 vi.mock("../client.js", () => ({
   gqlClient: { request: vi.fn() },
+  yontrackHeaders: () => ({ "X-Ontrack-Token": "test-token", "X-Yontrack-Agent-Session": "s-1" }),
 }));
 
 vi.mock("../utils.js", () => ({
@@ -80,7 +81,7 @@ describe("get_promotion_level_image", () => {
     expect(item.data).toBe(expectedBase64);
     expect(mockFetch).toHaveBeenCalledWith(
       "https://yontrack.example.com/rest/structure/promotionLevels/1/image",
-      { headers: { "X-Ontrack-Token": "test-token" } }
+      { headers: { "X-Ontrack-Token": "test-token", "X-Yontrack-Agent-Session": "s-1" } }
     );
   });
 

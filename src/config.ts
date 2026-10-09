@@ -7,6 +7,12 @@ const ConfigSchema = z.object({
     .string()
     .optional()
     .transform((v) => v === "true"),
+  YONTRACK_AGENT_TOOLS: z.enum(["auto", "true", "false"]).optional().default("auto"),
+  YONTRACK_UI_URL: z
+    .preprocess((v) => (v === "" ? undefined : v), z.string().url().optional())
+    .transform((v) => v?.replace(/\/+$/, "")),
+  YONTRACK_AGENT_SESSION: z.string().optional(),
+  YONTRACK_AGENT_SESSION_LINK: z.string().optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
@@ -16,8 +22,12 @@ let _config: Config;
 try {
   _config = ConfigSchema.parse(process.env);
 } catch (err) {
+  const details =
+    err instanceof z.ZodError
+      ? err.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")
+      : String(err);
   process.stderr.write(
-    "Missing required environment variables: YONTRACK_URL and YONTRACK_TOKEN\n"
+    `Invalid or missing environment variables (YONTRACK_URL and YONTRACK_TOKEN are required): ${details}\n`
   );
   process.exit(1);
 }

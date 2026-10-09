@@ -16,7 +16,8 @@
   },
   "files": [
     "build",
-    "yontrack.graphql"
+    "yontrack-v5.graphql",
+    "yontrack-v6.graphql"
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",

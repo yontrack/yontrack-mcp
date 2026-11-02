@@ -32,7 +32,9 @@ By default only read-only tools are available. Set `YONTRACK_MUTATIONS_ENABLED=t
 | Search | `search` | — |
 | GraphQL | `graphql_query` ✝ | — |
 
-> ✝ `graphql_query` is always registered but rejects requests whose query string starts with `mutation` when `YONTRACK_MUTATIONS_ENABLED` is not set.
+> ✝ `graphql_query` is always registered but, when `YONTRACK_MUTATIONS_ENABLED` is not set, rejects any document that can't be parsed or that contains an operation other than a query.
+>
+> Read-only mode is a guardrail against accidental writes, not a security boundary: to guarantee that nothing can be written, give the server a Yontrack token with read-only rights.
 
 ### Agent-context tools (Yontrack 6+)
 

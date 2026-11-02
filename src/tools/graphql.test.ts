@@ -108,6 +108,57 @@ describe("graphql_query tool", () => {
     expect(mockRequest).not.toHaveBeenCalled();
   });
 
+  const mutation = 'createProject(input: {name: "x"}) { errors { message } }';
+
+  it.each([
+    ["behind a comment line", `# comment\nmutation { ${mutation} }`],
+    ["behind a comma", `,mutation { ${mutation} }`],
+    ["behind a BOM", `\uFEFFmutation { ${mutation} }`],
+    ["behind a fragment", `fragment F on Mutation { ${mutation} }\nmutation { ...F }`],
+    ["behind a query", `query Q { __typename }\nmutation W { ${mutation} }`],
+  ])("rejects a mutation %s when mutations are disabled", async (_shape, query) => {
+    const client = await createTestClient(registerGraphQLTools, false);
+    const result = await client.callTool({ name: "graphql_query", arguments: { query } });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as { type: string; text: string }[])[0].text;
+    expect(text).toMatch(/mutations are disabled/i);
+    expect(mockRequest).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unparsable query when mutations are disabled", async () => {
+    const client = await createTestClient(registerGraphQLTools, false);
+    const result = await client.callTool({ name: "graphql_query", arguments: { query: "mutation {" } });
+
+    expect(result.isError).toBe(true);
+    const text = (result.content as { type: string; text: string }[])[0].text;
+    expect(text).toMatch(/syntax error/i);
+    expect(mockRequest).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["a commented-out mutation", "# mutation { x }\nquery { __typename }"],
+    ["a field aliased mutation", "{ mutation: __typename }"],
+    ["a mutation in a string argument", 'query { projects(name: "mutation { x }") { id } }'],
+  ])("allows a query with %s when mutations are disabled", async (_shape, query) => {
+    mockRequest.mockResolvedValueOnce({});
+
+    const client = await createTestClient(registerGraphQLTools, false);
+    const result = await client.callTool({ name: "graphql_query", arguments: { query } });
+
+    expect(result.isError).toBeFalsy();
+    expect(mockRequest).toHaveBeenCalledOnce();
+  });
+
+  it("leaves query validation to Yontrack when mutations are enabled", async () => {
+    mockRequest.mockResolvedValueOnce({});
+
+    const client = await createTestClient(registerGraphQLTools, true);
+    await client.callTool({ name: "graphql_query", arguments: { query: "mutation {" } });
+
+    expect(mockRequest).toHaveBeenCalledOnce();
+  });
+
   it("allows mutation queries when mutations are enabled", async () => {
     mockRequest.mockResolvedValueOnce({ createBuild: { build: { id: 1 } } });
 

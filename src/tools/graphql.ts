@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { DocumentNode, GraphQLError, Kind, OperationTypeNode, parse } from "graphql";
 import { z } from "zod";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -12,6 +13,21 @@ function readSchema(file: string): string {
 const schemaV5 = readSchema("yontrack-v5.graphql");
 // Snapshot of the Yontrack 6 schema, to be refreshed at each 6.x release
 const schemaV6 = readSchema("yontrack-v6.graphql");
+
+/** Why read-only mode refuses this document, if it does: only documents made of queries can run. */
+function readOnlyRefusal(query: string): string | undefined {
+  let document: DocumentNode;
+  try {
+    document = parse(query);
+  } catch (error) {
+    if (error instanceof GraphQLError) return error.message;
+    throw error;
+  }
+  const writes = document.definitions.some(
+    (definition) => definition.kind === Kind.OPERATION_DEFINITION && definition.operation !== OperationTypeNode.QUERY
+  );
+  return writes ? "Mutations are disabled. Set YONTRACK_MUTATIONS_ENABLED=true to allow them." : undefined;
+}
 
 /** `v6` is true when the connected Yontrack is detected as a Yontrack 6 (see src/capabilities.ts). */
 export function registerGraphQLTools(server: McpServer, allowMutations: boolean, v6 = false) {
@@ -36,10 +52,11 @@ export function registerGraphQLTools(server: McpServer, allowMutations: boolean,
       variables: z.record(z.unknown()).optional().describe("Query variables"),
     },
     async ({ query, variables }) => {
-      if (!allowMutations && /^\s*mutation\b/i.test(query)) {
+      const refusal = allowMutations ? undefined : readOnlyRefusal(query);
+      if (refusal) {
         return {
           isError: true,
-          content: [{ type: "text", text: "Mutations are disabled. Set YONTRACK_MUTATIONS_ENABLED=true to allow them." }],
+          content: [{ type: "text", text: refusal }],
         };
       }
       const data = await gqlClient.request(query, variables ?? {});

@@ -1,3 +1,10 @@
+## [1.15.1](https://github.com/yontrack/yontrack-mcp/compare/v1.15.0...v1.15.1) (2026-11-02)
+
+
+### Bug Fixes
+
+* block mutations hidden from the read-only check in graphql_query ([9f9c472](https://github.com/yontrack/yontrack-mcp/commit/9f9c4721604a35360d79ea2f66f2421d152e676e))
+
 # [1.15.0](https://github.com/yontrack/yontrack-mcp/compare/v1.14.3...v1.15.0) (2026-10-09)
 
 
